@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="header-text">
+        <h1>Плотность грунта</h1>
+        <p><font color="red">Выберите метод для расчета плотности грунта ниже</font>, а затем введите данные в таблицу. Для каждого испытания вводятся два образца грунта, на основе которых расчитывается средняя плотность в г/см3. Расчет ведется в соответствии с ГОСТ 5180-2015</p>
+    </div>
+
+    <script src="https://unpkg.com/xlsx@0.21.0/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            padding: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><g fill="none" stroke="%23002f4b" stroke-opacity="0.05" stroke-width="2"><ellipse cx="15" cy="20" rx="2" ry="5"/><ellipse cx="60" cy="30" rx="3" ry="6"/><ellipse cx="90" cy="50" rx="1.5" ry="4"/><ellipse cx="40" cy="80" rx="2" ry="4"/><ellipse cx="100" cy="100" rx="2.5" ry="5"/><ellipse cx="20" cy="100" rx="1.5" ry="3"/></g></svg>');
+            background-repeat: repeat;
+            background-size: 120px;
+        }
+
+        .top-menu {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        .top-menu button {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .top-menu button:hover {
+            background-color: #34495e;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(44, 62, 80, 0.95);
+            z-index: 20;
+            padding-top: 60px;
+            overflow: hidden;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .sidebar.open {
+            visibility: visible;
+            opacity: 1;
+        }
+        .sidebar button.close-btn {
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            width: 80%;
+            max-width: 300px;
+        }
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 15px 25px;
+            margin: 5px 0;
+            text-decoration: none;
+            font-size: 18px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+        }
+        .sidebar a:hover {
+            background-color: #34495e;
+        }
+
+        .header-text {
+            max-width: 800px;
+            margin: 0 auto 30px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .method-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border-radius: 14px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, border-color 0.3s;
+            min-width: 300px;
+        }
+        .action-btn:hover {
+            background-color: #34495e;
+            border-color: #34495e;
+        }
+        .action-btn.initial {
+            background-color: #2c3e50;
+            border-color: #2c3e50;
+        }
+        .action-btn.initial:hover {
+            background-color: #34495e;
+            border-color: #34495e;
+        }
+        .action-btn.method-btn:not(.active):not(.initial) {
+            background-color: #7f8c8d;
+            border-color: #7f8c8d;
+        }
+        .action-btn.method-btn:not(.active):not(.initial):hover {
+            background-color: #95a5a6;
+            border-color: #95a5a6;
+        }
+        .action-btn.active, .action-btn.always-active {
+            background-color: #2c3e50;
+            border-color: #2c3e50;
+        }
+        .action-btn.active:hover, .action-btn.always-active:hover {
+            background-color: #34495e;
+            border-color: #34495e;
+        }
+
+        .test-container {
+            display: none;
+            margin-top: 20px;
+        }
+        .test-container.active {
+            display: block;
+        }
+
+        .tests-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .test-flex {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 15px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideIn 0.5s ease forwards;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .calc-wrapper {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 620px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .main-info {
+            border: 2px solid #2c3e50;
+            border-radius: 12px;
+            padding: 10px 15px;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 180px;
+            max-width: 200px;
+            transition: max-height 0.5s ease, padding 0.5s ease, border 0.5s ease;
+            overflow: hidden;
+        }
+        .main-info.collapsed {
+            max-height: 0;
+            padding: 0 15px;
+            border: 0;
+        }
+        .main-info label {
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+        }
+        .main-info input {
+            padding: 4px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 13px;
+        }
+
+        .calculation-container {
+            border: 2px solid #2c3e50;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: rgba(255, 255, 255, 0.9);
+            min-width: 500px;
+            max-width: 620px;
+            margin: 0 auto;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        .sample-block {
+            border: 1px dashed #2c3e50;
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 10px;
+            background-color: rgba(240, 248, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: slideIn 0.4s ease forwards;
+            overflow-x: auto;
+        }
+        .sample-block:nth-child(1) {
+            animation-delay: 0s;
+        }
+        .sample-block:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .sample-content {
+            flex-grow: 1;
+        }
+        .sample-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .sample-row.paraffin {
+            flex-direction: column;
+        }
+        .sample-row input, .sample-row select {
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 13px;
+            width: 100%;
+        }
+        .sample-row.paraffin input {
+            max-width: 100%;
+        }
+        .humidity-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .humidity-group input {
+            flex: 1;
+        }
+        .humidity-group select {
+            width: auto;
+            min-width: 60px;
+        }
+
+        .sample-result {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-left: 8px;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .action-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .btn-calc {
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-calc:hover {
+            background-color: #34495e;
+        }
+
+        .btn-clear {
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 1px solid #7f8c8d;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-clear:hover {
+            background-color: #bdc3c7;
+        }
+
+        .result-average {
+            font-weight: bold;
+            font-size: 16px;
+            color: #1a73e8;
+        }
+
+        .delete-btn {
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 1px solid #e74c3c;
+            background-color: #e74c3c;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 0;
+            display: block;
+        }
+
+        .toggle-info-btn {
+            padding: 4px 8px;
+            border-radius: 10px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-top: 0;
+            display: block;
+        }
+        .toggle-info-btn:hover {
+            background-color: #34495e;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            body {
+                padding-top: 60px;
+            }
+            .header-text {
+                margin-top: 20px;
+            }
+            .method-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            .action-btn {
+                width: 90%;
+                max-width: 300px;
+            }
+            .test-flex {
+                flex-direction: column;
+                align-items: center;
+            }
+            .calc-wrapper {
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            .main-info {
+                order: -1;
+                width: 100%;
+                min-width: 200px;
+                max-width: 300px;
+                margin: 10px auto 0 auto;
+                display: flex;
+            }
+            .calculation-container {
+                order: 0;
+                width: 100%;
+                max-width: 90%;
+                min-width: 320px;
+                margin: 0 auto;
+                box-sizing: border-box;
+            }
+            .toggle-info-btn {
+                order: -2;
+                margin-bottom: 10px;
+                align-self: flex-start;
+                margin-left: 0;
+                display: block;
+            }
+            .delete-btn {
+                order: 1;
+                margin-top: 10px;
+                align-self: flex-end;
+                margin-right: 0;
+                margin-left: 0;
+                display: block;
+            }
+            .sample-row {
+                flex-direction: column;
+            }
+            .sample-row input, .sample-row select {
+                width: 100%;
+            }
+            .humidity-group {
+                flex-direction: row;
+                width: 100%;
+            }
+            .humidity-group input.soil-humidity {
+                flex: 3;
+                width: 70%;
+            }
+            .humidity-group select.humidity-unit {
+                flex: 1;
+                width: 30%;
+                min-width: 60px;
+                max-width: 80px;
+            }
+        }
+
+        @media screen and (max-width: 400px) {
+            .calculation-container {
+                min-width: 280px;
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-menu">
+        <button onclick="App.navigate('index.html')" aria-label="Перейти на главную">🏠</button>
+        <button onclick="App.toggleMenu()" aria-label="Открыть меню">☰ Меню</button>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <button class="close-btn" onclick="App.toggleMenu()" aria-label="Закрыть меню">Закрыть ×</button>
+        <a href="vlazhnost.html">Влажность грунта</a>
+        <a href="granulometr.html">Гранулометрический состав</a>
+        <a href="plastichnost.html">Пределы пластичности</a>
+        <a href="plotnost.html">Плотность грунта</a>
+        <a href="plotnost_chastic.html">Плотность частиц грунта</a>
+    </div>
+
+       <div class="method-buttons">
+        <button class="action-btn method-btn initial" id="btn-ring" onclick="App.toggleMethod('ring')" aria-label="Плотность методом режущего кольца">Плотность методом режущего кольца</button>
+        <button class="action-btn method-btn initial" id="btn-paraffin" onclick="App.toggleMethod('paraffin')" aria-label="Плотность методом парафинирования">Плотность методом парафинирования</button>
+        <button class="action-btn method-btn initial" id="btn-dry" onclick="App.toggleMethod('dry')" aria-label="Плотность сухого грунта">Плотность сухого грунта</button>
+    </div>
+
+    <div id="test-container-ring" class="test-container">
+        <div class="tests-container" id="tests-container-ring"></div>
+        <div style="text-align: center; margin-top: 25px;">
+            <button class="action-btn always-active" onclick="App.addTest('ring')" aria-label="Добавить новое испытание">+ Добавить испытание</button>
+            <button class="action-btn always-active" onclick="App.exportToExcel('ring')" aria-label="Экспорт в Excel">Экспорт в Excel</button>
+        </div>
+    </div>
+
+    <div id="test-container-paraffin" class="test-container">
+        <div class="tests-container" id="tests-container-paraffin"></div>
+        <div style="text-align: center; margin-top: 25px;">
+            <button class="action-btn always-active" onclick="App.addTest('paraffin')" aria-label="Добавить новое испытание">+ Добавить испытание</button>
+            <button class="action-btn always-active" onclick="App.exportToExcel('paraffin')" aria-label="Экспорт в Excel">Экспорт в Excel</button>
+        </div>
+    </div>
+
+    <div id="test-container-dry" class="test-container">
+        <div class="tests-container" id="tests-container-dry"></div>
+        <div style="text-align: center; margin-top: 25px;">
+            <button class="action-btn always-active" onclick="App.addTest('dry')" aria-label="Добавить новое испытание">+ Добавить испытание</button>
+            <button class="action-btn always-active" onclick="App.exportToExcel('dry')" aria-label="Экспорт в Excel">Экспорт в Excel</button>
+        </div>
+    </div>
+
+    <script>
+        const App = {
+            init() {
+                document.addEventListener('DOMContentLoaded', () => {
+                    if (!window.XLSX) {
+                        console.error("SheetJS library is not loaded");
+                    } else {
+                        console.log("SheetJS library loaded successfully");
+                    }
+                    console.log('Density page loaded');
+                    // Не трогаем кнопки, оставляем .action-btn и .initial для тёмно-синего цвета
+                });
+            },
+
+            toggleMenu() {
+                document.getElementById("sidebar").classList.toggle("open");
+            },
+
+            navigate(url) {
+                location.href = url;
+            },
+
+            toggleMethod(method) {
+                // Удаляем .initial у всех кнопок
+                const buttons = ['ring', 'paraffin', 'dry'].map(id => document.getElementById(`btn-${id}`));
+                buttons.forEach(btn => btn.classList.remove('initial'));
+
+                // Показываем контейнер выбранного метода, скрываем остальные
+                const containers = ['ring', 'paraffin', 'dry'].map(id => document.getElementById(`test-container-${id}`));
+                containers.forEach(container => container.classList.remove('active'));
+                document.getElementById(`test-container-${method}`).classList.add('active');
+
+                // Устанавливаем .active для выбранной кнопки
+                buttons.forEach(btn => btn.classList.remove('active'));
+                document.getElementById(`btn-${method}`).classList.add('active');
+
+                // Добавляем испытание, если контейнер пустой
+                if (!document.getElementById(`tests-container-${method}`).querySelector('.test-flex')) {
+                    this.addTest(method);
+                }
+            },
+
+            addTest(method) {
+                const container = document.getElementById(`tests-container-${method}`);
+                const testFlex = document.createElement("div");
+                testFlex.classList.add("test-flex");
+
+                const calcWrapper = document.createElement("div");
+                calcWrapper.classList.add("calc-wrapper");
+
+                const toggleBtn = document.createElement("button");
+                toggleBtn.classList.add("toggle-info-btn");
+                toggleBtn.textContent = "+";
+                toggleBtn.setAttribute("aria-label", "Раскрыть информацию об испытании");
+
+                const mainInfo = document.createElement("div");
+                mainInfo.classList.add("main-info", "collapsed");
+                mainInfo.innerHTML = `
+                    <label>Лабораторный номер: <input type="text" aria-label="Лабораторный номер"></label>
+                    <label>Номер скважины: <input type="text" aria-label="Номер скважины"></label>
+                    <label>Глубина отбора: <input type="text" aria-label="Глубина отбора"></label>
+                `;
+
+                toggleBtn.onclick = () => {
+                    mainInfo.classList.toggle("collapsed");
+                    toggleBtn.textContent = mainInfo.classList.contains("collapsed") ? "+" : "–";
+                };
+
+                const calcDiv = document.createElement("div");
+                calcDiv.classList.add("calculation-container");
+
+                let sampleContent;
+                if (method === 'ring') {
+                    sampleContent = `
+                        <div class="sample-block">
+                            <div class="sample-content">
+                                <h4>Образец 1</h4>
+                                <div class="sample-row">
+                                    <input type="number" class="ring-volume" placeholder="Объём кольца, см³" aria-label="Объём кольца">
+                                    <input type="number" class="ring-weight" placeholder="Вес кольца, г" aria-label="Вес кольца">
+                                    <input type="number" class="soil-ring-weight" placeholder="Вес грунта с кольцом, г" aria-label="Вес грунта с кольцом">
+                                </div>
+                            </div>
+                            <div class="sample-result">-</div>
+                        </div>
+                        <div class="sample-block">
+                            <div class="sample-content">
+                                <h4>Образец 2</h4>
+                                <div class="sample-row">
+                                    <input type="number" class="ring-volume" placeholder="Объём кольца, см³" aria-label="Объём кольца">
+                                    <input type="number" class="ring-weight" placeholder="Вес кольца, г" aria-label="Вес кольца">
+                                    <input type="number" class="soil-ring-weight" placeholder="Вес грунта с кольцом, г" aria-label="Вес грунта с кольцом">
+                                </div>
+                            </div>
+                            <div class="sample-result">-</div>
+                        </div>
+                    `;
+                } else if (method === 'paraffin') {
+                    sampleContent = `
+                        <div class="sample-block">
+                            <div class="sample-content">
+                                <h4>Образец 1</h4>
+                                <div class="sample-row paraffin">
+                                    <input type="number" class="soil-mass-before" placeholder="Масса грунта до парафинирования, г" aria-label="Масса грунта до парафинирования">
+                                    <input type="number" class="soil-mass-after" placeholder="Масса грунта после парафинирования, г" aria-label="Масса грунта после парафинирования">
+                                    <input type="number" class="paraffin-soil-water" placeholder="Вес парафинированного грунта в воде, г" aria-label="Вес парафинированного грунта в воде">
+                                </div>
+                            </div>
+                            <div class="sample-result">-</div>
+                        </div>
+                        <div class="sample-block">
+                            <div class="sample-content">
+                                <h4>Образец 2</h4>
+                                <div class="sample-row paraffin">
+                                    <input type="number" class="soil-mass-before" placeholder="Масса грунта до парафинирования, г" aria-label="Масса грунта до парафинирования">
+                                    <input type="number" class="soil-mass-after" placeholder="Масса грунта после парафинирования, г" aria-label="Масса грунта после парафинирования">
+                                    <input type="number" class="paraffin-soil-water" placeholder="Вес парафинированного грунта в воде, г" aria-label="Вес парафинированного грунта в воде">
+                                </div>
+                            </div>
+                            <div class="sample-result">-</div>
+                        </div>
+                    `;
+                } else if (method === 'dry') {
+                    sampleContent = `
+                        <div class="sample-block">
+                            <div class="sample-content">
+                                <h4>Образец 1</h4>
+                                <div class="sample-row">
+                                    <input type="number" class="soil-density" placeholder="Плотность грунта, г/см³" aria-label="Плотность грунта">
+                                    <div class="humidity-group">
+                                        <input type="number" class="soil-humidity" placeholder="Влажность грунта" aria-label="Влажность грунта">
+                                        <select class="humidity-unit" aria-label="Единица измерения влажности">
+                                            <option value="percent">%</option>
+                                            <option value="decimal">д.е.</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sample-result">-</div>
+                        </div>
+                        <div class="sample-block">
+                            <div class="sample-content">
+                                <h4>Образец 2</h4>
+                                <div class="sample-row">
+                                    <input type="number" class="soil-density" placeholder="Плотность грунта, г/см³" aria-label="Плотность грунта">
+                                    <div class="humidity-group">
+                                        <input type="number" class="soil-humidity" placeholder="Влажность грунта" aria-label="Влажность грунта">
+                                        <select class="humidity-unit" aria-label="Единица измерения влажности">
+                                            <option value="percent">%</option>
+                                            <option value="decimal">д.е.</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sample-result">-</div>
+                        </div>
+                    `;
+                }
+
+                calcDiv.innerHTML = sampleContent;
+
+                const actionRow = document.createElement("div");
+                actionRow.classList.add("action-row");
+                actionRow.innerHTML = `
+                    <div>
+                        <button class="btn-calc" onclick="App.calculateTest(this, '${method}')" aria-label="Рассчитать">Рассчитать</button>
+                        <button class="btn-clear" onclick="App.clearTest(this)" aria-label="Очистить поля">Очистить</button>
+                    </div>
+                    <div class="result-average"><span class="density-value">-</span></div>
+                `;
+
+                calcDiv.appendChild(actionRow);
+                calcWrapper.appendChild(toggleBtn);
+                calcWrapper.appendChild(mainInfo);
+                calcWrapper.appendChild(calcDiv);
+                calcWrapper.appendChild(document.createElement("button"));
+                calcWrapper.lastChild.classList.add("delete-btn");
+                calcWrapper.lastChild.textContent = "Удалить";
+                calcWrapper.lastChild.setAttribute("aria-label", "Удалить испытание");
+                calcWrapper.lastChild.onclick = () => testFlex.remove();
+                testFlex.appendChild(calcWrapper);
+                container.appendChild(testFlex);
+            },
+
+            clearTest(btn) {
+                const block = btn.closest(".test-flex");
+                block.querySelectorAll("input").forEach(input => input.value = "");
+                block.querySelectorAll(".sample-result").forEach(result => result.textContent = "-");
+                block.querySelector(".density-value").textContent = "-";
+            },
+
+            calculateTest(btn, method) {
+                const block = btn.closest(".test-flex");
+                const samples = block.querySelectorAll(".sample-block");
+                let densityValues = [];
+
+                if (method === 'ring') {
+                    samples.forEach(sample => {
+                        const volume = parseFloat(sample.querySelector(".ring-volume").value);
+                        const ringWeight = parseFloat(sample.querySelector(".ring-weight").value);
+                        const soilRingWeight = parseFloat(sample.querySelector(".soil-ring-weight").value);
+
+                        if (isNaN(volume) || isNaN(ringWeight) || isNaN(soilRingWeight) || volume <= 0 || ringWeight < 0 || soilRingWeight <= ringWeight) {
+                            sample.querySelector(".sample-result").textContent = "Некорректные данные";
+                            return;
+                        }
+
+                        const density = (soilRingWeight - ringWeight) / volume;
+                        sample.querySelector(".sample-result").textContent = `${density.toFixed(3)} г/см³`;
+                        densityValues.push(density);
+                    });
+                } else if (method === 'paraffin') {
+                    const paraffinDensity = 0.900;
+                    const waterDensity = 1;
+                    samples.forEach(sample => {
+                        const massBefore = parseFloat(sample.querySelector(".soil-mass-before").value);
+                        const massAfter = parseFloat(sample.querySelector(".soil-mass-after").value);
+                        const paraffinSoilWater = parseFloat(sample.querySelector(".paraffin-soil-water").value);
+
+                        if (isNaN(massBefore) || isNaN(massAfter) || isNaN(paraffinSoilWater) || massBefore <= 0 || massAfter < massBefore || paraffinSoilWater <= 0) {
+                            sample.querySelector(".sample-result").textContent = "Некорректные данные";
+                            return;
+                        }
+
+                        const density = (massBefore * paraffinDensity * waterDensity) / 
+                            (paraffinDensity * paraffinSoilWater - waterDensity * (massAfter - massBefore));
+                        sample.querySelector(".sample-result").textContent = `${density.toFixed(3)} г/см³`;
+                        densityValues.push(density);
+                    });
+                } else if (method === 'dry') {
+                    samples.forEach(sample => {
+                        const soilDensity = parseFloat(sample.querySelector(".soil-density").value);
+                        const humidity = parseFloat(sample.querySelector(".soil-humidity").value);
+                        const unit = sample.querySelector(".humidity-unit").value;
+
+                        if (isNaN(soilDensity) || isNaN(humidity) || soilDensity <= 0 || humidity < 0) {
+                            sample.querySelector(".sample-result").textContent = "Некорректные данные";
+                            return;
+                        }
+
+                        let density;
+                        if (unit === 'percent') {
+                            density = soilDensity / (1 + 0.01 * humidity);
+                        } else {
+                            density = soilDensity / (1 + humidity);
+                        }
+                        sample.querySelector(".sample-result").textContent = `${density.toFixed(3)} г/см³`;
+                        densityValues.push(density);
+                    });
+                }
+
+                // Вычисляем среднее для одного или двух заполненных образцов
+                const avg = densityValues.length >= 1 
+                    ? densityValues.reduce((sum, val) => sum + val, 0) / densityValues.length 
+                    : null;
+                block.querySelector(".density-value").textContent = avg ? `${avg.toFixed(3)} г/см³` : "Н/Д";
+            },
+
+            exportToExcel(method) {
+                if (!window.XLSX) {
+                    console.error("SheetJS library is not loaded");
+                    alert("Ошибка: библиотека для экспорта не загружена.");
+                    return;
+                }
+
+                try {
+                    const tests = document.querySelectorAll(`#tests-container-${method} .test-flex`);
+                    const data = [];
+                    let title;
+                    let resultLabel;
+
+                    if (method === 'ring') {
+                        title = "Плотность грунта методом режущего кольца";
+                        resultLabel = "Плотность, г/см³";
+                    } else if (method === 'paraffin') {
+                        title = "Плотность грунта методом парафинирования";
+                        resultLabel = "Плотность, г/см³";
+                    } else if (method === 'dry') {
+                        title = "Плотность сухого грунта";
+                        resultLabel = "Плотность сухого грунта, г/см³";
+                    }
+
+                    tests.forEach(test => {
+                        const mainInfoInputs = test.querySelectorAll(".main-info input");
+                        const labNumber = mainInfoInputs[0].value.trim();
+                        const wellNumber = mainInfoInputs[1].value.trim();
+                        const depth = mainInfoInputs[2].value.trim();
+                        const density = test.querySelector(".density-value").textContent.trim();
+
+                        if (labNumber && wellNumber && depth && density !== "-" && density !== "Н/Д") {
+                            data.push([labNumber, wellNumber, depth, density]);
+                        }
+                    });
+
+                    if (data.length === 0) {
+                        alert("Нет данных для экспорта. Заполните данные и выполните расчёт");
+                        return;
+                    }
+
+                    const today = new Date();
+                    const dateStr = today.toISOString().split("T")[0];
+                    const ws_data = [
+                        [title],
+                        [`Дата: ${dateStr}`],
+                        [],
+                        ["Лабораторный номер", "Номер скважины", "Глубина отбора", resultLabel],
+                        ...data
+                    ];
+
+                    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+                    ws["A1"] = { v: title, s: { font: { name: "Arial", sz: 14, bold: true }, alignment: { horizontal: "center" } } };
+                    ws["A2"] = { v: `Дата: ${dateStr}`, s: { font: { name: "Arial", sz: 12 }, alignment: { horizontal: "left" } } };
+                    const headerRange = ["A4", "B4", "C4", "D4"];
+                    headerRange.forEach(cell => {
+                        ws[cell] = {
+                            ...ws[cell],
+                            s: {
+                                font: { name: "Arial", sz: 12, bold: true, color: { rgb: "FFFFFF" } },
+                                fill: { fgColor: { rgb: "2c3e50" } },
+                                alignment: { horizontal: "center" }
+                            }
+                        };
+                    });
+
+                    ws['!cols'] = [
+                        { wch: 20 },
+                        { wch: 20 },
+                        { wch: 20 },
+                        { wch: 25 }
+                    ];
+
+                    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Плотность грунта");
+
+                    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+                    const blob = new Blob([wbout], { type: "application/octet-stream" });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `Плотность_Грунта_${method}_${dateStr}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                } catch (error) {
+                    console.error("Export error:", error);
+                    alert("Ошибка при экспорте данных. Проверьте консоль браузера.");
+                }
+            }
+        };
+
+        App.init();
+    </script>
+</body>
+</html>
