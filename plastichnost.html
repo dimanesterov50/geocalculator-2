@@ -340,25 +340,20 @@
             background-color: #34495e;
         }
 
-        .average-container {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin-top: 10px;
-            padding: 8px;
-            background-color: rgba(240, 248, 255, 0.5);
-        }
         .average-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-top: 10px;
+            padding: 8px;
+            background-color: rgba(240, 248, 255, 0.5);
         }
         .average-label {
             font-size: 16px;
             color: #2c3e50;
             font-weight: normal;
         }
-        .result-average {
+        .limit-value {
             font-weight: bold;
             font-size: 16px;
             color: #1a73e8;
@@ -546,7 +541,7 @@
             .sample-row input {
                 width: 100%;
             }
-            .average-container, .plasticity-number-container, .soil-type-container {
+            .average-row, .plasticity-number-container, .soil-type-container {
                 width: 100%;
             }
             .btn-delete-sample {
@@ -580,7 +575,7 @@
 
     <div class="header-text">
         <h1>Пределы пластичности</h1>
-        <p style="color: #000000;">Введите данные для расчёта верхнего и нижнего пределов пластичности грунта. Добавляйте образцы для каждого предела, чтобы получить средние значения в д.е. После расчёта можно определить число пластичности и тип грунта. Расчёт ведётся в соответствии с ГОСТ 5180-2015.</p>
+        <p style="color: #000000;">Введите данные для расчёта верхнего и нижнего пределов пластичности грунта. Добавляйте необходимое количество образцов для каждого предела, чтобы получить средние значения. После расчёта можно определить число пластичности и тип грунта. <br>Расчёт ведётся в соответствии с ГОСТ 5180-2015.</br></p>
     </div>
 
     <div id="test-container" class="test-container">
@@ -660,6 +655,10 @@
                                 <button class="btn-add-sample" onclick="App.addSample(this, 'upper')" aria-label="Добавить образец для верхнего предела">Добавить образец</button>
                             </div>
                         </div>
+                        <div class="average-row">
+                            <span class="average-label">Среднее:</span>
+                            <span class="limit-value">-</span>
+                        </div>
                     </div>
                     <div class="limit-block" data-limit="lower">
                         <h3>Нижний предел пластичности</h3>
@@ -678,15 +677,9 @@
                                 <button class="btn-add-sample" onclick="App.addSample(this, 'lower')" aria-label="Добавить образец для нижнего предела">Добавить образец</button>
                             </div>
                         </div>
-                    </div>
-                    <div class="average-container">
                         <div class="average-row">
-                            <span class="average-label">Средний верхний предел пластичности:</span>
-                            <div class="result-average"><span class="upper-limit-value">-</span></div>
-                        </div>
-                        <div class="average-row">
-                            <span class="average-label">Средний нижний предел пластичности:</span>
-                            <div class="result-average"><span class="lower-limit-value">-</span></div>
+                            <span class="average-label">Среднее:</span>
+                            <span class="limit-value">-</span>
                         </div>
                     </div>
                     <div class="plasticity-number-container">
@@ -754,9 +747,8 @@
                             block.remove();
                         }
                     });
+                    limitBlock.querySelector(".limit-value").textContent = "-";
                 });
-                calcDiv.querySelector(".upper-limit-value").textContent = "-";
-                calcDiv.querySelector(".lower-limit-value").textContent = "-";
                 calcDiv.querySelector(".plasticity-number-container").classList.remove("active");
                 calcDiv.querySelector(".plasticity-number-value").textContent = "-";
                 const soilTypeContainer = calcDiv.querySelector(".soil-type-container");
@@ -783,7 +775,7 @@
                     }
 
                     const limit = (wetSoilBux - drySoilBux) / (drySoilBux - emptyBux);
-                    sample.querySelector(".sample-result").textContent = `${limit.toFixed(3)} д.е.`;
+                    sample.querySelector(".sample-result").textContent = `${limit.toFixed(3)}`;
                     upperLimitValues.push(limit);
                 });
 
@@ -800,7 +792,7 @@
                     }
 
                     const limit = (wetSoilBux - drySoilBux) / (drySoilBux - emptyBux);
-                    sample.querySelector(".sample-result").textContent = `${limit.toFixed(3)} д.е.`;
+                    sample.querySelector(".sample-result").textContent = `${limit.toFixed(3)}`;
                     lowerLimitValues.push(limit);
                 });
 
@@ -808,18 +800,18 @@
                 const upperAvg = upperLimitValues.length >= 1 
                     ? upperLimitValues.reduce((sum, val) => sum + val, 0) / upperLimitValues.length 
                     : null;
-                calcDiv.querySelector(".upper-limit-value").textContent = upperAvg ? `${upperAvg.toFixed(3)} д.е.` : "Н/Д";
+                upperLimitBlock.querySelector(".limit-value").textContent = upperAvg ? `${upperAvg.toFixed(3)}` : "-";
 
                 const lowerAvg = lowerLimitValues.length >= 1 
                     ? lowerLimitValues.reduce((sum, val) => sum + val, 0) / lowerLimitValues.length 
                     : null;
-                calcDiv.querySelector(".lower-limit-value").textContent = lowerAvg ? `${lowerAvg.toFixed(3)} д.е.` : "Н/Д";
+                lowerLimitBlock.querySelector(".limit-value").textContent = lowerAvg ? `${lowerAvg.toFixed(3)}` : "-";
 
                 // Число пластичности
                 const plasticityContainer = calcDiv.querySelector(".plasticity-number-container");
                 if (upperAvg && lowerAvg) {
                     const plasticityNumber = upperAvg - lowerAvg;
-                    plasticityContainer.querySelector(".plasticity-number-value").textContent = `${plasticityNumber.toFixed(3)} д.е.`;
+                    plasticityContainer.querySelector(".plasticity-number-value").textContent = `${plasticityNumber.toFixed(3)}`;
                     plasticityContainer.classList.add("active");
                 } else {
                     plasticityContainer.classList.remove("active");
@@ -833,14 +825,14 @@
 
             determineSoil(btn) {
                 const calcDiv = btn.closest(".calculation-container");
-                const upperLimitText = calcDiv.querySelector(".upper-limit-value").textContent.trim();
-                const lowerLimitText = calcDiv.querySelector(".lower-limit-value").textContent.trim();
-                const upperAvg = parseFloat(upperLimitText.replace(" д.е.", ""));
-                const lowerAvg = parseFloat(lowerLimitText.replace(" д.е.", ""));
+                const upperLimitText = calcDiv.querySelector(".limit-block[data-limit='upper'] .limit-value").textContent.trim();
+                const lowerLimitText = calcDiv.querySelector(".limit-block[data-limit='lower'] .limit-value").textContent.trim();
+                const upperAvg = parseFloat(upperLimitText);
+                const lowerAvg = parseFloat(lowerLimitText);
 
                 console.log("determineSoil called", { upperLimitText, lowerLimitText, upperAvg, lowerAvg });
 
-                if (isNaN(upperAvg) || isNaN(lowerAvg) || upperLimitText === "Н/Д" || lowerLimitText === "Н/Д" || upperLimitText === "-" || lowerLimitText === "-") {
+                if (isNaN(upperAvg) || isNaN(lowerAvg) || upperLimitText === "-" || lowerLimitText === "-") {
                     console.log("Cannot determine soil: invalid or missing limits");
                     alert("Рассчитайте оба предела пластичности перед определением типа грунта.");
                     return;
@@ -868,7 +860,7 @@
                             <div class="soil-type-value soil-type">-</div>
                         </div>
                     `;
-                    const actionRow = calcDiv.querySelector(".action-row");
+                    const actionRow = calcDiv.querySelector(".action-row:last-of-type");
                     console.log("Action row found:", actionRow);
                     if (actionRow && actionRow.parentNode === calcDiv) {
                         calcDiv.insertBefore(soilTypeContainer, actionRow);
@@ -884,10 +876,10 @@
             calculateSoilType(btn) {
                 const soilTypeContainer = btn.closest(".soil-type-container");
                 const calcDiv = soilTypeContainer.closest(".calculation-container");
-                const upperLimitText = calcDiv.querySelector(".upper-limit-value").textContent.trim();
-                const lowerLimitText = calcDiv.querySelector(".lower-limit-value").textContent.trim();
-                const upperAvg = parseFloat(upperLimitText.replace(" д.е.", ""));
-                const lowerAvg = parseFloat(lowerLimitText.replace(" д.е.", ""));
+                const upperLimitText = calcDiv.querySelector(".limit-block[data-limit='upper'] .limit-value").textContent.trim();
+                const lowerLimitText = calcDiv.querySelector(".limit-block[data-limit='lower'] .limit-value").textContent.trim();
+                const upperAvg = parseFloat(upperLimitText);
+                const lowerAvg = parseFloat(lowerLimitText);
                 const humidityInput = soilTypeContainer.querySelector(".soil-humidity");
                 const humidity = parseFloat(humidityInput.value);
                 const Ip = upperAvg - lowerAvg;
@@ -904,18 +896,18 @@
 
                 if (Ip > 0) {
                     flowabilityIndex = ((humidity - lowerAvg) / Ip).toFixed(3);
-                    if (Ip <= 7) {
+                    if (Ip <= 0.07) {
                         if (flowabilityIndex < 0) soilType = "супесь твердая";
                         else if (flowabilityIndex <= 1) soilType = "супесь пластичная";
                         else soilType = "супесь текучая";
-                    } else if (Ip <= 12) {
+                    } else if (Ip <= 0.12) {
                         if (flowabilityIndex < 0) soilType = "суглинок легкий твердый";
                         else if (flowabilityIndex <= 0.25) soilType = "суглинок легкий полутвердый";
                         else if (flowabilityIndex <= 0.50) soilType = "суглинок легкий тугопластичный";
                         else if (flowabilityIndex <= 0.75) soilType = "суглинок легкий мягкопластичный";
                         else if (flowabilityIndex <= 1.0) soilType = "суглинок легкий текучепластичный";
                         else soilType = "суглинок легкий текучий";
-                    } else if (Ip <= 17) {
+                    } else if (Ip <= 0.17) {
                         if (flowabilityIndex < 0) soilType = "суглинок тяжелый твердый";
                         else if (flowabilityIndex <= 0.25) soilType = "суглинок тяжелый полутвердый";
                         else if (flowabilityIndex <= 0.50) soilType = "суглинок тяжелый тугопластичный";
@@ -953,8 +945,8 @@
                         const labNumber = mainInfoInputs[0].value.trim();
                         const wellNumber = mainInfoInputs[1].value.trim();
                         const depth = mainInfoInputs[2].value.trim();
-                        const upperLimit = test.querySelector(".upper-limit-value").textContent.trim();
-                        const lowerLimit = test.querySelector(".lower-limit-value").textContent.trim();
+                        const upperLimit = test.querySelector(".limit-block[data-limit='upper'] .limit-value").textContent.trim();
+                        const lowerLimit = test.querySelector(".limit-block[data-limit='lower'] .limit-value").textContent.trim();
                         const plasticityNumber = test.querySelector(".plasticity-number-value")?.textContent.trim() || "-";
                         const soilTypeContainer = test.querySelector(".soil-type-container");
                         const humidity = soilTypeContainer ? soilTypeContainer.querySelector(".soil-humidity")?.value.trim() || "-" : "-";
