@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Влажность грунта</title>
-    <!-- Для локального запуска скачайте xlsx.full.min.js и раскомментируйте следующую строку -->
-    <!-- <script src="xlsx.full.min.js"></script> -->
     <script src="https://unpkg.com/xlsx@0.21.0/dist/xlsx.full.min.js"></script>
     <style>
         * {
@@ -21,21 +19,9 @@
             font-family: Arial, sans-serif;
             background-color: #ffffff;
             padding: 20px;
-            position: relative;
-        }
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('background.svg');
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><g fill="none" stroke="%23002f4b" stroke-opacity="0.05" stroke-width="2"><ellipse cx="15" cy="20" rx="2" ry="5"/><ellipse cx="60" cy="30" rx="3" ry="6"/><ellipse cx="90" cy="50" rx="1.5" ry="4"/><ellipse cx="40" cy="80" rx="2" ry="4"/><ellipse cx="100" cy="100" rx="2.5" ry="5"/><ellipse cx="20" cy="100" rx="1.5" ry="3"/></g></svg>');
             background-repeat: repeat;
-            background-size: 200px;
-            opacity: 0.25;
-            pointer-events: none;
-            z-index: 0;
+            background-size: 120px;
         }
 
         .top-menu {
@@ -116,6 +102,14 @@
             text-align: center;
             position: relative;
             z-index: 1;
+        }
+        .header-text h1 {
+            font-size: 24px;
+            color: #2c3e50;
+        }
+        .header-text p {
+            font-size: 16px;
+            color: #7f8c8d;
         }
 
         #tests-container {
@@ -206,12 +200,19 @@
             transform: translateY(10px);
             animation: slideIn 0.4s ease forwards;
             overflow-x: auto;
+            position: relative;
         }
         .sample-block:nth-child(1) {
             animation-delay: 0s;
         }
         .sample-block:nth-child(2) {
             animation-delay: 0.15s;
+        }
+        .sample-block:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+        .sample-block:nth-child(4) {
+            animation-delay: 0.45s;
         }
 
         .sample-content {
@@ -234,7 +235,7 @@
             font-size: 12px;
             color: #7f8c8d;
             margin-left: 8px;
-            min-width: 50px;
+            min-width: 80px;
             text-align: right;
         }
 
@@ -245,18 +246,18 @@
             margin-top: 8px;
         }
 
-        .btn-calc {
+        .btn-calc-green {
             padding: 8px 14px;
             border-radius: 12px;
-            border: 2px solid #2c3e50;
-            background-color: #2c3e50;
+            border: 2px solid #2e7d32;
+            background-color: #2e7d32;
             color: white;
             cursor: pointer;
             font-size: 14px;
             font-weight: bold;
         }
-        .btn-calc:hover {
-            background-color: #34495e;
+        .btn-calc-green:hover {
+            background-color: #388e3c;
         }
 
         .btn-clear {
@@ -272,10 +273,55 @@
             background-color: #bdc3c7;
         }
 
+        .btn-add-sample {
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-add-sample:hover {
+            background-color: #34495e;
+        }
+
+        .btn-delete-sample {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid #e74c3c;
+            background-color: #e74c3c;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-delete-sample:hover {
+            background-color: #c0392b;
+        }
+
+        .average-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 8px;
+            background-color: rgba(240, 248, 255, 0.5);
+        }
+        .average-label {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: normal;
+        }
         .result-average {
             font-weight: bold;
             font-size: 16px;
             color: #1a73e8;
+            text-align: right;
         }
 
         .delete-btn {
@@ -380,6 +426,20 @@
                 margin-left: 0;
                 display: block;
             }
+            .sample-row {
+                flex-direction: column;
+            }
+            .sample-row input {
+                flex: 1 1 100%;
+            }
+            .average-container {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .btn-delete-sample {
+                top: 4px;
+                right: 4px;
+            }
         }
 
         @media screen and (max-width: 400px) {
@@ -389,28 +449,6 @@
             }
         }
     </style>
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #ffffff;
-
-    /* Паттерн */
-    background-image: url('data:image/svg+xml;utf8,\
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">\
-<g fill="none" stroke="%23002f4b" stroke-opacity="0.05" stroke-width="2">\
-<ellipse cx="15" cy="20" rx="2" ry="5"/>\
-<ellipse cx="60" cy="30" rx="3" ry="6"/>\
-<ellipse cx="90" cy="50" rx="1.5" ry="4"/>\
-<ellipse cx="40" cy="80" rx="2" ry="4"/>\
-<ellipse cx="100" cy="100" rx="2.5" ry="5"/>\
-<ellipse cx="20" cy="100" rx="1.5" ry="3"/>\
-</g></svg>');
-
-    background-repeat: repeat;
-    background-size: 120px;
-}
-</style>
 </head>
 <body>
     <div class="top-menu">
@@ -429,7 +467,7 @@ body {
 
     <div class="header-text">
         <h1>Влажность грунта</h1>
-        <p>Введите данные для расчета влажности грунта в таблицу ниже. Для каждого испытания вводятся два образца грунта, на основе которых расчитывается средняя влажность грунта в д.е. и в %. Расчет ведется в соответствии с ГОСТ 5180-2015</p>
+        <p><font color="black">Введите данные для расчета влажности грунта в таблицу ниже. Для каждого испытания вводятся данные образцов, на основе которых рассчитывается средняя влажность грунта в д.е. и в %. Расчет ведется в соответствии с ГОСТ 5180-2015</font></p>
     </div>
 
     <div id="tests-container"></div>
@@ -443,14 +481,13 @@ body {
         const App = {
             init() {
                 document.addEventListener('DOMContentLoaded', () => {
-                    // Check if XLSX is loaded
                     if (!window.XLSX) {
                         console.error("SheetJS library is not loaded");
                     } else {
                         console.log("SheetJS library loaded successfully");
                     }
                     this.addTest();
-                    console.log('Test block added');
+ Sy;
                 });
             },
 
@@ -501,22 +538,16 @@ body {
                         </div>
                         <div class="sample-result">-</div>
                     </div>
-                    <div class="sample-block">
-                        <div class="sample-content">
-                            <div class="sample-row">
-                                <input type="number" class="empty-box" placeholder="Пустой бюкс, г" aria-label="Вес пустого бюкса">
-                                <input type="number" class="wet-box" placeholder="Влажный грунт, г" aria-label="Вес влажного грунта">
-                                <input type="number" class="dry-box" placeholder="Сухой грунт, г" aria-label="Вес сухого грунта">
-                            </div>
-                        </div>
-                        <div class="sample-result">-</div>
+                    <div class="average-container">
+                        <span class="average-label">Средняя влажность:</span>
+                        <div class="result-average"><span class="humidity-value">-</span></div>
                     </div>
                     <div class="action-row">
                         <div>
-                            <button class="btn-calc" onclick="App.calculateTest(this)" aria-label="Рассчитать влажность">Рассчитать</button>
+                            <button class="btn-calc-green" onclick="App.calculateTest(this)" aria-label="Рассчитать влажность">Рассчитать</button>
+                            <button class="btn-add-sample" onclick="App.addSample(this)" aria-label="Добавить образец">Добавить образец</button>
                             <button class="btn-clear" onclick="App.clearTest(this)" aria-label="Очистить поля">Очистить</button>
                         </div>
-                        <div class="result-average"><span class="humidity-value">-</span></div>
                     </div>
                 `;
 
@@ -534,16 +565,48 @@ body {
                 container.appendChild(testFlex);
             },
 
+            addSample(btn) {
+                const calcDiv = btn.closest(".calculation-container");
+                const sampleCount = calcDiv.querySelectorAll(".sample-block").length + 1;
+                const sampleBlock = document.createElement("div");
+                sampleBlock.classList.add("sample-block");
+                sampleBlock.style.animationDelay = `${(sampleCount - 1) * 0.15}s`;
+                sampleBlock.innerHTML = `
+                    <div class="sample-content">
+                        <div class="sample-row">
+                            <input type="number" class="empty-box" placeholder="Пустой бюкс, г" aria-label="Вес пустого бюкса">
+                            <input type="number" class="wet-box" placeholder="Влажный грунт, г" aria-label="Вес влажного грунта">
+                            <input type="number" class="dry-box" placeholder="Сухой грунт, г" aria-label="Вес сухого грунта">
+                        </div>
+                    </div>
+                    <div class="sample-result">-</div>
+                    <button class="btn-delete-sample" onclick="App.deleteSample(this)" aria-label="Удалить образец">—</button>
+                `;
+                calcDiv.insertBefore(sampleBlock, calcDiv.querySelector(".average-container"));
+            },
+
+            deleteSample(btn) {
+                const calcDiv = btn.closest(".calculation-container");
+                btn.closest(".sample-block").remove();
+                this.calculateTest(calcDiv.querySelector(".btn-calc-green"));
+            },
+
             clearTest(btn) {
-                const block = btn.closest(".test-flex");
-                block.querySelectorAll("input").forEach(input => input.value = "");
-                block.querySelectorAll(".sample-result").forEach(result => result.textContent = "-");
-                block.querySelector(".humidity-value").textContent = "-";
+                const calcDiv = btn.closest(".calculation-container");
+                calcDiv.querySelectorAll(".sample-block").forEach((block, index) => {
+                    if (index === 0) {
+                        block.querySelectorAll("input").forEach(input => input.value = "");
+                        block.querySelector(".sample-result").textContent = "-";
+                    } else {
+                        block.remove();
+                    }
+                });
+                calcDiv.querySelector(".humidity-value").textContent = "-";
             },
 
             calculateTest(btn) {
-                const block = btn.closest(".test-flex");
-                const samples = block.querySelectorAll(".sample-block");
+                const calcDiv = btn.closest(".calculation-container");
+                const samples = calcDiv.querySelectorAll(".sample-block");
                 let humidities = [];
 
                 samples.forEach(sample => {
@@ -561,8 +624,8 @@ body {
                     humidities.push(h);
                 });
 
-                const avg = humidities.length > 0 ? humidities.reduce((a, b) => a + b, 0) / humidities.length : null;
-                block.querySelector(".humidity-value").textContent = avg ? `${avg.toFixed(3)} ед. (${(avg * 100).toFixed(2)}%)` : "Н/Д";
+                const avg = humidities.length >= 1 ? humidities.reduce((a, b) => a + b, 0) / humidities.length : null;
+                calcDiv.querySelector(".humidity-value").textContent = avg ? `${avg.toFixed(3)} ед. (${(avg * 100).toFixed(2)}%)` : "Н/Д";
             },
 
             exportToExcel() {
@@ -598,20 +661,18 @@ body {
                         return;
                     }
 
-                    // Create sheet with header and date
                     const today = new Date();
                     const dateStr = today.toISOString().split("T")[0];
                     const ws_data = [
                         ["Результаты испытаний на влажность грунта"],
                         [`Дата: ${dateStr}`],
-                        [], // Empty row
+                        [],
                         ["Лабораторный номер", "Номер скважины", "Глубина отбора", "Средняя влажность"],
                         ...data
                     ];
 
                     const ws = XLSX.utils.aoa_to_sheet(ws_data);
 
-                    // Apply styles
                     ws["A1"] = { v: "Результаты испытаний на влажность грунта", s: { font: { name: "Arial", sz: 14, bold: true }, alignment: { horizontal: "center" } } };
                     ws["A2"] = { v: `Дата: ${dateStr}`, s: { font: { name: "Arial", sz: 12 }, alignment: { horizontal: "left" } } };
                     const headerRange = ["A4", "B4", "C4", "D4"];
@@ -626,21 +687,18 @@ body {
                         };
                     });
 
-                    // Set column widths
                     ws['!cols'] = [
-                        { wch: 20 }, // Лабораторный номер
-                        { wch: 20 }, // Номер скважины
-                        { wch: 20 }, // Глубина отбора
-                        { wch: 25 }  // Средняя влажность
+                        { wch: 20 },
+                        { wch: 20 },
+                        { wch: 20 },
+                        { wch: 25 }
                     ];
 
-                    // Merge A1:D1 for title
                     ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
 
                     const wb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(wb, ws, "Влажность грунта");
 
-                    // Generate and download file
                     const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
                     const blob = new Blob([wbout], { type: "application/octet-stream" });
                     const url = window.URL.createObjectURL(blob);
@@ -662,7 +720,5 @@ body {
 
         App.init();
     </script>
-
-
 </body>
 </html>

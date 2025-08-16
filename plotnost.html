@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<div class="header-text">
-        <h1>Плотность грунта</h1>
-        <p><font color="red">Выберите метод для расчета плотности грунта ниже</font>, а затем введите данные в таблицу. Для каждого испытания вводятся два образца грунта, на основе которых расчитывается средняя плотность в г/см3. Расчет ведется в соответствии с ГОСТ 5180-2015</p>
-    </div>
-
+    <title>Плотность грунта</title>
     <script src="https://unpkg.com/xlsx@0.21.0/dist/xlsx.full.min.js"></script>
     <style>
         * {
@@ -23,7 +19,7 @@
             font-family: Arial, sans-serif;
             background-color: #ffffff;
             padding: 20px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><g fill="none" stroke="%23002f4b" stroke-opacity="0.05" stroke-width="2"><ellipse cx="15" cy="20" rx="2" ry="5"/><ellipse cx="60" cy="30" rx="3" ry="6"/><ellipse cx="90" cy="50" rx="1.5" ry="4"/><ellipse cx="40" cy="80" rx="2" ry="4"/><ellipse cx="100" cy="100" rx="2.5" ry="5"/><ellipse cx="20" cy="100" rx="1.5" ry="3"/></g></svg>');
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><g fill="none" stroke="%23002f4b" stroke-opacity="0.05" stroke-width="2"><rect x="8" y="8" width="6" height="6"/><rect x="38" y="28" width="4" height="4"/><rect x="68" y="18" width="8" height="8"/><rect x="88" y="48" width="5" height="5"/><rect x="18" y="58" width="6" height="6"/><rect x="48" y="78" width="4" height="4"/><rect x="78" y="88" width="7" height="7"/><rect x="98" y="28" width="5" height="5"/></g></svg>');
             background-repeat: repeat;
             background-size: 120px;
         }
@@ -106,6 +102,14 @@
             text-align: center;
             position: relative;
             z-index: 1;
+        }
+        .header-text h1 {
+            font-size: 24px;
+            color: #2c3e50;
+        }
+        .header-text p {
+            font-size: 16px;
+            color: #e74c3c;
         }
 
         .method-buttons {
@@ -253,12 +257,19 @@
             transform: translateY(10px);
             animation: slideIn 0.4s ease forwards;
             overflow-x: auto;
+            position: relative;
         }
         .sample-block:nth-child(1) {
             animation-delay: 0s;
         }
         .sample-block:nth-child(2) {
             animation-delay: 0.15s;
+        }
+        .sample-block:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+        .sample-block:nth-child(4) {
+            animation-delay: 0.45s;
         }
 
         .sample-content {
@@ -310,18 +321,18 @@
             margin-top: 8px;
         }
 
-        .btn-calc {
+        .btn-calc-green {
             padding: 8px 14px;
             border-radius: 12px;
-            border: 2px solid #2c3e50;
-            background-color: #2c3e50;
+            border: 2px solid #2e7d32;
+            background-color: #2e7d32;
             color: white;
             cursor: pointer;
             font-size: 14px;
             font-weight: bold;
         }
-        .btn-calc:hover {
-            background-color: #34495e;
+        .btn-calc-green:hover {
+            background-color: #388e3c;
         }
 
         .btn-clear {
@@ -337,10 +348,55 @@
             background-color: #bdc3c7;
         }
 
+        .btn-add-sample {
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-add-sample:hover {
+            background-color: #34495e;
+        }
+
+        .average-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 8px;
+            background-color: rgba(240, 248, 255, 0.5);
+        }
+        .average-label {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: normal;
+        }
         .result-average {
             font-weight: bold;
             font-size: 16px;
             color: #1a73e8;
+            text-align: right;
+        }
+
+        .btn-delete-sample {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid #e74c3c;
+            background-color: #e74c3c;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-delete-sample:hover {
+            background-color: #c0392b;
         }
 
         .delete-btn {
@@ -457,6 +513,14 @@
                 min-width: 60px;
                 max-width: 80px;
             }
+            .average-container {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .btn-delete-sample {
+                top: 4px;
+                right: 4px;
+            }
         }
 
         @media screen and (max-width: 400px) {
@@ -482,7 +546,12 @@
         <a href="plotnost_chastic.html">Плотность частиц грунта</a>
     </div>
 
-       <div class="method-buttons">
+    <div class="header-text">
+        <h1>Плотность грунта</h1>
+        <p style="color: #000000;"><font color="red">Выберите метод для расчета плотности грунта ниже</font>, а затем введите данные в таблицу. Для каждого испытания вводятся данные образцов, на основе которых рассчитывается средняя плотность в г/см³. Расчет ведется в соответствии с ГОСТ 5180-2015</p>
+    </div>
+
+    <div class="method-buttons">
         <button class="action-btn method-btn initial" id="btn-ring" onclick="App.toggleMethod('ring')" aria-label="Плотность методом режущего кольца">Плотность методом режущего кольца</button>
         <button class="action-btn method-btn initial" id="btn-paraffin" onclick="App.toggleMethod('paraffin')" aria-label="Плотность методом парафинирования">Плотность методом парафинирования</button>
         <button class="action-btn method-btn initial" id="btn-dry" onclick="App.toggleMethod('dry')" aria-label="Плотность сухого грунта">Плотность сухого грунта</button>
@@ -522,7 +591,6 @@
                         console.log("SheetJS library loaded successfully");
                     }
                     console.log('Density page loaded');
-                    // Не трогаем кнопки, оставляем .action-btn и .initial для тёмно-синего цвета
                 });
             },
 
@@ -535,20 +603,13 @@
             },
 
             toggleMethod(method) {
-                // Удаляем .initial у всех кнопок
                 const buttons = ['ring', 'paraffin', 'dry'].map(id => document.getElementById(`btn-${id}`));
                 buttons.forEach(btn => btn.classList.remove('initial'));
-
-                // Показываем контейнер выбранного метода, скрываем остальные
                 const containers = ['ring', 'paraffin', 'dry'].map(id => document.getElementById(`test-container-${id}`));
                 containers.forEach(container => container.classList.remove('active'));
                 document.getElementById(`test-container-${method}`).classList.add('active');
-
-                // Устанавливаем .active для выбранной кнопки
                 buttons.forEach(btn => btn.classList.remove('active'));
                 document.getElementById(`btn-${method}`).classList.add('active');
-
-                // Добавляем испытание, если контейнер пустой
                 if (!document.getElementById(`tests-container-${method}`).querySelector('.test-flex')) {
                     this.addTest(method);
                 }
@@ -588,18 +649,6 @@
                     sampleContent = `
                         <div class="sample-block">
                             <div class="sample-content">
-                                <h4>Образец 1</h4>
-                                <div class="sample-row">
-                                    <input type="number" class="ring-volume" placeholder="Объём кольца, см³" aria-label="Объём кольца">
-                                    <input type="number" class="ring-weight" placeholder="Вес кольца, г" aria-label="Вес кольца">
-                                    <input type="number" class="soil-ring-weight" placeholder="Вес грунта с кольцом, г" aria-label="Вес грунта с кольцом">
-                                </div>
-                            </div>
-                            <div class="sample-result">-</div>
-                        </div>
-                        <div class="sample-block">
-                            <div class="sample-content">
-                                <h4>Образец 2</h4>
                                 <div class="sample-row">
                                     <input type="number" class="ring-volume" placeholder="Объём кольца, см³" aria-label="Объём кольца">
                                     <input type="number" class="ring-weight" placeholder="Вес кольца, г" aria-label="Вес кольца">
@@ -613,18 +662,6 @@
                     sampleContent = `
                         <div class="sample-block">
                             <div class="sample-content">
-                                <h4>Образец 1</h4>
-                                <div class="sample-row paraffin">
-                                    <input type="number" class="soil-mass-before" placeholder="Масса грунта до парафинирования, г" aria-label="Масса грунта до парафинирования">
-                                    <input type="number" class="soil-mass-after" placeholder="Масса грунта после парафинирования, г" aria-label="Масса грунта после парафинирования">
-                                    <input type="number" class="paraffin-soil-water" placeholder="Вес парафинированного грунта в воде, г" aria-label="Вес парафинированного грунта в воде">
-                                </div>
-                            </div>
-                            <div class="sample-result">-</div>
-                        </div>
-                        <div class="sample-block">
-                            <div class="sample-content">
-                                <h4>Образец 2</h4>
                                 <div class="sample-row paraffin">
                                     <input type="number" class="soil-mass-before" placeholder="Масса грунта до парафинирования, г" aria-label="Масса грунта до парафинирования">
                                     <input type="number" class="soil-mass-after" placeholder="Масса грунта после парафинирования, г" aria-label="Масса грунта после парафинирования">
@@ -638,23 +675,6 @@
                     sampleContent = `
                         <div class="sample-block">
                             <div class="sample-content">
-                                <h4>Образец 1</h4>
-                                <div class="sample-row">
-                                    <input type="number" class="soil-density" placeholder="Плотность грунта, г/см³" aria-label="Плотность грунта">
-                                    <div class="humidity-group">
-                                        <input type="number" class="soil-humidity" placeholder="Влажность грунта" aria-label="Влажность грунта">
-                                        <select class="humidity-unit" aria-label="Единица измерения влажности">
-                                            <option value="percent">%</option>
-                                            <option value="decimal">д.е.</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="sample-result">-</div>
-                        </div>
-                        <div class="sample-block">
-                            <div class="sample-content">
-                                <h4>Образец 2</h4>
                                 <div class="sample-row">
                                     <input type="number" class="soil-density" placeholder="Плотность грунта, г/см³" aria-label="Плотность грунта">
                                     <div class="humidity-group">
@@ -673,17 +693,20 @@
 
                 calcDiv.innerHTML = sampleContent;
 
-                const actionRow = document.createElement("div");
-                actionRow.classList.add("action-row");
-                actionRow.innerHTML = `
-                    <div>
-                        <button class="btn-calc" onclick="App.calculateTest(this, '${method}')" aria-label="Рассчитать">Рассчитать</button>
-                        <button class="btn-clear" onclick="App.clearTest(this)" aria-label="Очистить поля">Очистить</button>
+                calcDiv.innerHTML += `
+                    <div class="average-container">
+                        <span class="average-label">Средняя плотность:</span>
+                        <div class="result-average"><span class="density-value">-</span></div>
                     </div>
-                    <div class="result-average"><span class="density-value">-</span></div>
+                    <div class="action-row">
+                        <div>
+                            <button class="btn-calc-green" onclick="App.calculateTest(this, '${method}')" aria-label="Рассчитать">Рассчитать</button>
+                            <button class="btn-add-sample" onclick="App.addSample(this, '${method}')" aria-label="Добавить образец">Добавить образец</button>
+                            <button class="btn-clear" onclick="App.clearTest(this)" aria-label="Очистить поля">Очистить</button>
+                        </div>
+                    </div>
                 `;
 
-                calcDiv.appendChild(actionRow);
                 calcWrapper.appendChild(toggleBtn);
                 calcWrapper.appendChild(mainInfo);
                 calcWrapper.appendChild(calcDiv);
@@ -696,11 +719,81 @@
                 container.appendChild(testFlex);
             },
 
+            addSample(btn, method) {
+                const calcDiv = btn.closest(".calculation-container");
+                const sampleCount = calcDiv.querySelectorAll(".sample-block").length + 1;
+                const sampleBlock = document.createElement("div");
+                sampleBlock.classList.add("sample-block");
+                sampleBlock.style.animationDelay = `${(sampleCount - 1) * 0.15}s`;
+
+                let sampleContent;
+                if (method === 'ring') {
+                    sampleContent = `
+                        <div class="sample-content">
+                            <h4>Образец ${sampleCount}</h4>
+                            <div class="sample-row">
+                                <input type="number" class="ring-volume" placeholder="Объём кольца, см³" aria-label="Объём кольца">
+                                <input type="number" class="ring-weight" placeholder="Вес кольца, г" aria-label="Вес кольца">
+                                <input type="number" class="soil-ring-weight" placeholder="Вес грунта с кольцом, г" aria-label="Вес грунта с кольцом">
+                            </div>
+                        </div>
+                        <div class="sample-result">-</div>
+                        <button class="btn-delete-sample" onclick="App.deleteSample(this)" aria-label="Удалить образец">—</button>
+                    `;
+                } else if (method === 'paraffin') {
+                    sampleContent = `
+                        <div class="sample-content">
+                            <h4>Образец ${sampleCount}</h4>
+                            <div class="sample-row paraffin">
+                                <input type="number" class="soil-mass-before" placeholder="Масса грунта до парафинирования, г" aria-label="Масса грунта до парафинирования">
+                                <input type="number" class="soil-mass-after" placeholder="Масса грунта после парафинирования, г" aria-label="Масса грунта после парафинирования">
+                                <input type="number" class="paraffin-soil-water" placeholder="Вес парафинированного грунта в воде, г" aria-label="Вес парафинированного грунта в воде">
+                            </div>
+                        </div>
+                        <div class="sample-result">-</div>
+                        <button class="btn-delete-sample" onclick="App.deleteSample(this)" aria-label="Удалить образец">—</button>
+                    `;
+                } else if (method === 'dry') {
+                    sampleContent = `
+                        <div class="sample-content">
+                            <h4>Образец ${sampleCount}</h4>
+                            <div class="sample-row">
+                                <input type="number" class="soil-density" placeholder="Плотность грунта, г/см³" aria-label="Плотность грунта">
+                                <div class="humidity-group">
+                                    <input type="number" class="soil-humidity" placeholder="Влажность грунта" aria-label="Влажность грунта">
+                                    <select class="humidity-unit" aria-label="Единица измерения влажности">
+                                        <option value="percent">%</option>
+                                        <option value="decimal">д.е.</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sample-result">-</div>
+                        <button class="btn-delete-sample" onclick="App.deleteSample(this)" aria-label="Удалить образец">—</button>
+                    `;
+                }
+
+                sampleBlock.innerHTML = sampleContent;
+                calcDiv.insertBefore(sampleBlock, calcDiv.querySelector(".average-container"));
+            },
+
+            deleteSample(btn) {
+                const calcDiv = btn.closest(".calculation-container");
+                btn.closest(".sample-block").remove();
+                this.calculateTest(calcDiv.querySelector(".btn-calc-green"), calcDiv.querySelector(".btn-calc-green").getAttribute("onclick").match(/'([^']+)'/)[1]);
+            },
+
             clearTest(btn) {
-                const block = btn.closest(".test-flex");
-                block.querySelectorAll("input").forEach(input => input.value = "");
-                block.querySelectorAll(".sample-result").forEach(result => result.textContent = "-");
-                block.querySelector(".density-value").textContent = "-";
+                const calcDiv = btn.closest(".calculation-container");
+                calcDiv.querySelectorAll(".sample-block").forEach((block, index) => {
+                    if (index === 0) {
+                        block.querySelectorAll("input").forEach(input => input.value = "");
+                        block.querySelector(".sample-result").textContent = "-";
+                    } else {
+                        block.remove();
+                    }
+                });
+                calcDiv.querySelector(".density-value").textContent = "-";
             },
 
             calculateTest(btn, method) {
@@ -763,7 +856,6 @@
                     });
                 }
 
-                // Вычисляем среднее для одного или двух заполненных образцов
                 const avg = densityValues.length >= 1 
                     ? densityValues.reduce((sum, val) => sum + val, 0) / densityValues.length 
                     : null;

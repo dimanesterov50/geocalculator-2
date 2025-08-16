@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пределы пластичности</title>
+    <script src="https://unpkg.com/xlsx@0.21.0/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            padding: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><g fill="none" stroke="%23002f4b" stroke-opacity="0.05" stroke-width="2"><path d="M0 20 Q30 10 60 20 T120 20" /><path d="M0 40 Q30 50 60 40 T120 40" /><path d="M0 60 Q30 70 60 60 T120 60" /><path d="M0 80 Q30 90 60 80 T120 80" /><path d="M0 100 Q30 110 60 100 T120 100" /></g></svg>');
+            background-repeat: repeat;
+            background-size: 120px;
+        }
+
+        .top-menu {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        .top-menu button {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .top-menu button:hover {
+            background-color: #34495e;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(44, 62, 80, 0.95);
+            z-index: 20;
+            padding-top: 60px;
+            overflow: hidden;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .sidebar.open {
+            visibility: visible;
+            opacity: 1;
+        }
+        .sidebar button.close-btn {
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            width: 80%;
+            max-width: 300px;
+        }
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 15px 25px;
+            margin: 5px 0;
+            text-decoration: none;
+            font-size: 18px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+        }
+        .sidebar a:hover {
+            background-color: #34495e;
+        }
+
+        .header-text {
+            max-width: 800px;
+            margin: 0 auto 30px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .header-text h1 {
+            font-size: 24px;
+            color: #2c3e50;
+        }
+        .header-text p {
+            font-size: 16px;
+            color: #e74c3c;
+        }
+
+        .test-container {
+            display: block;
+            margin-top: 20px;
+        }
+
+        .tests-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .test-flex {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 15px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideIn 0.5s ease forwards;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .calc-wrapper {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 620px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .main-info {
+            border: 2px solid #2c3e50;
+            border-radius: 12px;
+            padding: 10px 15px;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 180px;
+            max-width: 200px;
+            transition: max-height 0.5s ease, padding 0.5s ease, border 0.5s ease;
+            overflow: hidden;
+        }
+        .main-info.collapsed {
+            max-height: 0;
+            padding: 0 15px;
+            border: 0;
+        }
+        .main-info label {
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+        }
+        .main-info input {
+            padding: 4px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 13px;
+        }
+
+        .calculation-container {
+            border: 2px solid #2c3e50;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: rgba(255, 255, 255, 0.9);
+            min-width: 500px;
+            max-width: 620px;
+            margin: 0 auto;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        .limit-block {
+            margin-bottom: 15px;
+        }
+        .limit-block h3 {
+            font-size: 16px;
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+        }
+
+        .sample-block {
+            border: 1px dashed #2c3e50;
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 10px;
+            background-color: rgba(240, 248, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: slideIn 0.4s ease forwards;
+            overflow-x: auto;
+            position: relative;
+        }
+        .sample-block:nth-child(1) {
+            animation-delay: 0s;
+        }
+        .sample-block:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+        .sample-block:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+        .sample-block:nth-child(4) {
+            animation-delay: 0.45s;
+        }
+
+        .sample-content {
+            flex-grow: 1;
+        }
+        .sample-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .sample-row input {
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 13px;
+            width: 100%;
+        }
+
+        .sample-result {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-left: 8px;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .action-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border-radius: 14px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, border-color 0.3s;
+            min-width: 300px;
+        }
+        .action-btn:hover {
+            background-color: #34495e;
+            border-color: #34495e;
+        }
+        .action-btn.always-active {
+            background-color: #2c3e50;
+            border-color: #2c3e50;
+        }
+        .action-btn.always-active:hover {
+            background-color: #34495e;
+            border-color: #34495e;
+        }
+
+        .btn-calc-green {
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 2px solid #2e7d32;
+            background-color: #2e7d32;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-calc-green:hover {
+            background-color: #388e3c;
+        }
+
+        .btn-clear {
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 1px solid #7f8c8d;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-clear:hover {
+            background-color: #bdc3c7;
+        }
+
+        .btn-add-sample {
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-add-sample:hover {
+            background-color: #34495e;
+        }
+
+        .btn-determine-soil {
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-determine-soil:hover {
+            background-color: #34495e;
+        }
+
+        .average-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+            padding: 8px;
+            background-color: rgba(240, 248, 255, 0.5);
+        }
+        .average-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .average-label {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: normal;
+        }
+        .result-average {
+            font-weight: bold;
+            font-size: 16px;
+            color: #1a73e8;
+            text-align: right;
+        }
+
+        .plasticity-number-container {
+            display: none;
+            margin-top: 10px;
+            padding: 8px;
+            background-color: rgba(240, 248, 255, 0.5);
+        }
+        .plasticity-number-container.active {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .plasticity-number-label {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: normal;
+        }
+        .plasticity-number-value {
+            font-weight: bold;
+            font-size: 16px;
+            color: #1a73e8;
+            text-align: right;
+        }
+
+        .soil-type-container {
+            display: none;
+            margin-top: 10px;
+            padding: 8px;
+            background-color: rgba(240, 248, 255, 0.5);
+        }
+        .soil-type-container.active {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .soil-type-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .soil-type-label {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: normal;
+        }
+        .soil-type-value {
+            font-weight: bold;
+            font-size: 16px;
+            color: #1a73e8;
+            text-align: right;
+        }
+        .soil-type-container input {
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 13px;
+            width: 100px;
+        }
+
+        .btn-calculate-soil-type {
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 2px solid #2e7d32;
+            background-color: #2e7d32;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-calculate-soil-type:hover {
+            background-color: #388e3c;
+        }
+
+        .btn-delete-sample {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid #e74c3c;
+            background-color: #e74c3c;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-delete-sample:hover {
+            background-color: #c0392b;
+        }
+
+        .delete-btn {
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 1px solid #e74c3c;
+            background-color: #e74c3c;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 0;
+            display: block;
+        }
+
+        .toggle-info-btn {
+            padding: 4px 8px;
+            border-radius: 10px;
+            border: 2px solid #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-top: 0;
+            display: block;
+        }
+        .toggle-info-btn:hover {
+            background-color: #34495e;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            body {
+                padding-top: 60px;
+            }
+            .header-text {
+                margin-top: 20px;
+            }
+            .test-flex {
+                flex-direction: column;
+                align-items: center;
+            }
+            .calc-wrapper {
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            .main-info {
+                order: -1;
+                width: 100%;
+                min-width: 200px;
+                max-width: 300px;
+                margin: 10px auto 0 auto;
+                display: flex;
+            }
+            .calculation-container {
+                order: 0;
+                width: 100%;
+                max-width: 90%;
+                min-width: 320px;
+                margin: 0 auto;
+                box-sizing: border-box;
+            }
+            .toggle-info-btn {
+                order: -2;
+                margin-bottom: 10px;
+                align-self: flex-start;
+                margin-left: 0;
+                display: block;
+            }
+            .delete-btn {
+                order: 1;
+                margin-top: 10px;
+                align-self: flex-end;
+                margin-right: 0;
+                margin-left: 0;
+                display: block;
+            }
+            .sample-row {
+                flex-direction: column;
+            }
+            .sample-row input {
+                width: 100%;
+            }
+            .average-container, .plasticity-number-container, .soil-type-container {
+                width: 100%;
+            }
+            .btn-delete-sample {
+                top: 4px;
+                right: 4px;
+            }
+        }
+
+        @media screen and (max-width: 400px) {
+            .calculation-container {
+                min-width: 280px;
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-menu">
+        <button onclick="App.navigate('index.html')" aria-label="Перейти на главную">🏠</button>
+        <button onclick="App.toggleMenu()" aria-label="Открыть меню">☰ Меню</button>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <button class="close-btn" onclick="App.toggleMenu()" aria-label="Закрыть меню">Закрыть ×</button>
+        <a href="vlazhnost.html">Влажность грунта</a>
+        <a href="granulometr.html">Гранулометрический состав</a>
+        <a href="plastichnost.html">Пределы пластичности</a>
+        <a href="plotnost.html">Плотность грунта</a>
+        <a href="plotnost_chastic.html">Плотность частиц грунта</a>
+    </div>
+
+    <div class="header-text">
+        <h1>Пределы пластичности</h1>
+        <p style="color: #000000;">Введите данные для расчёта верхнего и нижнего пределов пластичности грунта. Добавляйте образцы для каждого предела, чтобы получить средние значения в д.е. После расчёта можно определить число пластичности и тип грунта. Расчёт ведётся в соответствии с ГОСТ 5180-2015.</p>
+    </div>
+
+    <div id="test-container" class="test-container">
+        <div class="tests-container" id="tests-container"></div>
+        <div style="text-align: center; margin-top: 25px;">
+            <button class="action-btn always-active" onclick="App.addTest()" aria-label="Добавить новое испытание">+ Добавить испытание</button>
+            <button class="action-btn always-active" onclick="App.exportToExcel()" aria-label="Экспорт в Excel">Экспорт в Excel</button>
+        </div>
+    </div>
+
+    <script>
+        const App = {
+            init() {
+                document.addEventListener('DOMContentLoaded', () => {
+                    if (!window.XLSX) {
+                        console.error("SheetJS library is not loaded");
+                    } else {
+                        console.log("SheetJS library loaded successfully");
+                    }
+                    console.log('Plasticity page loaded');
+                    this.addTest();
+                });
+            },
+
+            toggleMenu() {
+                document.getElementById("sidebar").classList.toggle("open");
+            },
+
+            navigate(url) {
+                location.href = url;
+            },
+
+            addTest() {
+                const container = document.getElementById("tests-container");
+                const testFlex = document.createElement("div");
+                testFlex.classList.add("test-flex");
+
+                const calcWrapper = document.createElement("div");
+                calcWrapper.classList.add("calc-wrapper");
+
+                const toggleBtn = document.createElement("button");
+                toggleBtn.classList.add("toggle-info-btn");
+                toggleBtn.textContent = "+";
+                toggleBtn.setAttribute("aria-label", "Раскрыть информацию об испытании");
+
+                const mainInfo = document.createElement("div");
+                mainInfo.classList.add("main-info", "collapsed");
+                mainInfo.innerHTML = `
+                    <label>Лабораторный номер: <input type="text" aria-label="Лабораторный номер"></label>
+                    <label>Номер скважины: <input type="text" aria-label="Номер скважины"></label>
+                    <label>Глубина отбора: <input type="text" aria-label="Глубина отбора"></label>
+                `;
+
+                toggleBtn.onclick = () => {
+                    mainInfo.classList.toggle("collapsed");
+                    toggleBtn.textContent = mainInfo.classList.contains("collapsed") ? "+" : "–";
+                };
+
+                const calcDiv = document.createElement("div");
+                calcDiv.classList.add("calculation-container");
+
+                calcDiv.innerHTML = `
+                    <div class="limit-block" data-limit="upper">
+                        <h3>Верхний предел пластичности</h3>
+                        <div class="sample-block">
+                            <div class="sample-content">
+                                <div class="sample-row">
+                                    <input type="number" class="empty-bux-weight" placeholder="Вес пустого бюкса, г" aria-label="Вес пустого бюкса">
+                                    <input type="number" class="wet-soil-bux-weight" placeholder="Вес бюкса с влажным грунтом, г" aria-label="Вес бюкса с влажным грунтом">
+                                    <input type="number" class="dry-soil-bux-weight" placeholder="Вес бюкса с сухим грунтом, г" aria-label="Вес бюкса с сухим грунтом">
+                                </div>
+                            </div>
+                            <div class="sample-result">-</div>
+                        </div>
+                        <div class="action-row">
+                            <div>
+                                <button class="btn-add-sample" onclick="App.addSample(this, 'upper')" aria-label="Добавить образец для верхнего предела">Добавить образец</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="limit-block" data-limit="lower">
+                        <h3>Нижний предел пластичности</h3>
+                        <div class="sample-block">
+                            <div class="sample-content">
+                                <div class="sample-row">
+                                    <input type="number" class="empty-bux-weight" placeholder="Вес пустого бюкса, г" aria-label="Вес пустого бюкса">
+                                    <input type="number" class="wet-soil-bux-weight" placeholder="Вес бюкса с влажным грунтом, г" aria-label="Вес бюкса с влажным грунтом">
+                                    <input type="number" class="dry-soil-bux-weight" placeholder="Вес бюкса с сухим грунтом, г" aria-label="Вес бюкса с сухим грунтом">
+                                </div>
+                            </div>
+                            <div class="sample-result">-</div>
+                        </div>
+                        <div class="action-row">
+                            <div>
+                                <button class="btn-add-sample" onclick="App.addSample(this, 'lower')" aria-label="Добавить образец для нижнего предела">Добавить образец</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="average-container">
+                        <div class="average-row">
+                            <span class="average-label">Средний верхний предел пластичности:</span>
+                            <div class="result-average"><span class="upper-limit-value">-</span></div>
+                        </div>
+                        <div class="average-row">
+                            <span class="average-label">Средний нижний предел пластичности:</span>
+                            <div class="result-average"><span class="lower-limit-value">-</span></div>
+                        </div>
+                    </div>
+                    <div class="plasticity-number-container">
+                        <span class="plasticity-number-label">Число пластичности:</span>
+                        <div class="plasticity-number-value">-</div>
+                    </div>
+                    <div class="action-row">
+                        <div>
+                            <button class="btn-calc-green" onclick="App.calculateTest(this)" aria-label="Рассчитать">Рассчитать</button>
+                            <button class="btn-clear" onclick="App.clearTest(this)" aria-label="Очистить поля">Очистить</button>
+                            <button class="btn-determine-soil" onclick="App.determineSoil(this)" aria-label="Определить грунт">Определить грунт</button>
+                        </div>
+                    </div>
+                `;
+
+                calcWrapper.appendChild(toggleBtn);
+                calcWrapper.appendChild(mainInfo);
+                calcWrapper.appendChild(calcDiv);
+                calcWrapper.appendChild(document.createElement("button"));
+                calcWrapper.lastChild.classList.add("delete-btn");
+                calcWrapper.lastChild.textContent = "Удалить";
+                calcWrapper.lastChild.setAttribute("aria-label", "Удалить испытание");
+                calcWrapper.lastChild.onclick = () => testFlex.remove();
+                testFlex.appendChild(calcWrapper);
+                container.appendChild(testFlex);
+            },
+
+            addSample(btn, limit) {
+                const limitBlock = btn.closest(".limit-block");
+                const sampleCount = limitBlock.querySelectorAll(".sample-block").length + 1;
+                const sampleBlock = document.createElement("div");
+                sampleBlock.classList.add("sample-block");
+                sampleBlock.style.animationDelay = `${(sampleCount - 1) * 0.15}s`;
+
+                sampleBlock.innerHTML = `
+                    <div class="sample-content">
+                        <h4>Образец ${sampleCount}</h4>
+                        <div class="sample-row">
+                            <input type="number" class="empty-bux-weight" placeholder="Вес пустого бюкса, г" aria-label="Вес пустого бюкса">
+                            <input type="number" class="wet-soil-bux-weight" placeholder="Вес бюкса с влажным грунтом, г" aria-label="Вес бюкса с влажным грунтом">
+                            <input type="number" class="dry-soil-bux-weight" placeholder="Вес бюкса с сухим грунтом, г" aria-label="Вес бюкса с сухим грунтом">
+                        </div>
+                    </div>
+                    <div class="sample-result">-</div>
+                    <button class="btn-delete-sample" onclick="App.deleteSample(this)" aria-label="Удалить образец">—</button>
+                `;
+
+                limitBlock.insertBefore(sampleBlock, limitBlock.querySelector(".action-row"));
+            },
+
+            deleteSample(btn) {
+                const calcDiv = btn.closest(".calculation-container");
+                btn.closest(".sample-block").remove();
+                this.calculateTest(calcDiv.querySelector(".btn-calc-green"));
+            },
+
+            clearTest(btn) {
+                const calcDiv = btn.closest(".calculation-container");
+                calcDiv.querySelectorAll(".limit-block").forEach(limitBlock => {
+                    limitBlock.querySelectorAll(".sample-block").forEach((block, index) => {
+                        if (index === 0) {
+                            block.querySelectorAll("input").forEach(input => input.value = "");
+                            block.querySelector(".sample-result").textContent = "-";
+                        } else {
+                            block.remove();
+                        }
+                    });
+                });
+                calcDiv.querySelector(".upper-limit-value").textContent = "-";
+                calcDiv.querySelector(".lower-limit-value").textContent = "-";
+                calcDiv.querySelector(".plasticity-number-container").classList.remove("active");
+                calcDiv.querySelector(".plasticity-number-value").textContent = "-";
+                const soilTypeContainer = calcDiv.querySelector(".soil-type-container");
+                if (soilTypeContainer) soilTypeContainer.remove();
+            },
+
+            calculateTest(btn) {
+                const calcDiv = btn.closest(".calculation-container");
+                const upperLimitBlock = calcDiv.querySelector(".limit-block[data-limit='upper']");
+                const lowerLimitBlock = calcDiv.querySelector(".limit-block[data-limit='lower']");
+                let upperLimitValues = [];
+                let lowerLimitValues = [];
+
+                // Верхний предел пластичности
+                upperLimitBlock.querySelectorAll(".sample-block").forEach(sample => {
+                    const emptyBux = parseFloat(sample.querySelector(".empty-bux-weight").value);
+                    const wetSoilBux = parseFloat(sample.querySelector(".wet-soil-bux-weight").value);
+                    const drySoilBux = parseFloat(sample.querySelector(".dry-soil-bux-weight").value);
+
+                    if (isNaN(emptyBux) || isNaN(wetSoilBux) || isNaN(drySoilBux) || 
+                        emptyBux < 0 || wetSoilBux <= emptyBux || drySoilBux <= emptyBux || drySoilBux > wetSoilBux) {
+                        sample.querySelector(".sample-result").textContent = "Некорректные данные";
+                        return;
+                    }
+
+                    const limit = (wetSoilBux - drySoilBux) / (drySoilBux - emptyBux);
+                    sample.querySelector(".sample-result").textContent = `${limit.toFixed(3)} д.е.`;
+                    upperLimitValues.push(limit);
+                });
+
+                // Нижний предел пластичности
+                lowerLimitBlock.querySelectorAll(".sample-block").forEach(sample => {
+                    const emptyBux = parseFloat(sample.querySelector(".empty-bux-weight").value);
+                    const wetSoilBux = parseFloat(sample.querySelector(".wet-soil-bux-weight").value);
+                    const drySoilBux = parseFloat(sample.querySelector(".dry-soil-bux-weight").value);
+
+                    if (isNaN(emptyBux) || isNaN(wetSoilBux) || isNaN(drySoilBux) || 
+                        emptyBux < 0 || wetSoilBux <= emptyBux || drySoilBux <= emptyBux || drySoilBux > wetSoilBux) {
+                        sample.querySelector(".sample-result").textContent = "Некорректные данные";
+                        return;
+                    }
+
+                    const limit = (wetSoilBux - drySoilBux) / (drySoilBux - emptyBux);
+                    sample.querySelector(".sample-result").textContent = `${limit.toFixed(3)} д.е.`;
+                    lowerLimitValues.push(limit);
+                });
+
+                // Средние значения
+                const upperAvg = upperLimitValues.length >= 1 
+                    ? upperLimitValues.reduce((sum, val) => sum + val, 0) / upperLimitValues.length 
+                    : null;
+                calcDiv.querySelector(".upper-limit-value").textContent = upperAvg ? `${upperAvg.toFixed(3)} д.е.` : "Н/Д";
+
+                const lowerAvg = lowerLimitValues.length >= 1 
+                    ? lowerLimitValues.reduce((sum, val) => sum + val, 0) / lowerLimitValues.length 
+                    : null;
+                calcDiv.querySelector(".lower-limit-value").textContent = lowerAvg ? `${lowerAvg.toFixed(3)} д.е.` : "Н/Д";
+
+                // Число пластичности
+                const plasticityContainer = calcDiv.querySelector(".plasticity-number-container");
+                if (upperAvg && lowerAvg) {
+                    const plasticityNumber = upperAvg - lowerAvg;
+                    plasticityContainer.querySelector(".plasticity-number-value").textContent = `${plasticityNumber.toFixed(3)} д.е.`;
+                    plasticityContainer.classList.add("active");
+                } else {
+                    plasticityContainer.classList.remove("active");
+                    plasticityContainer.querySelector(".plasticity-number-value").textContent = "-";
+                }
+
+                // Удаление поля типа грунта, если оно было
+                const soilTypeContainer = calcDiv.querySelector(".soil-type-container");
+                if (soilTypeContainer) soilTypeContainer.remove();
+            },
+
+            determineSoil(btn) {
+                const calcDiv = btn.closest(".calculation-container");
+                const upperLimitText = calcDiv.querySelector(".upper-limit-value").textContent.trim();
+                const lowerLimitText = calcDiv.querySelector(".lower-limit-value").textContent.trim();
+                const upperAvg = parseFloat(upperLimitText.replace(" д.е.", ""));
+                const lowerAvg = parseFloat(lowerLimitText.replace(" д.е.", ""));
+
+                console.log("determineSoil called", { upperLimitText, lowerLimitText, upperAvg, lowerAvg });
+
+                if (isNaN(upperAvg) || isNaN(lowerAvg) || upperLimitText === "Н/Д" || lowerLimitText === "Н/Д" || upperLimitText === "-" || lowerLimitText === "-") {
+                    console.log("Cannot determine soil: invalid or missing limits");
+                    alert("Рассчитайте оба предела пластичности перед определением типа грунта.");
+                    return;
+                }
+
+                let soilTypeContainer = calcDiv.querySelector(".soil-type-container");
+                if (!soilTypeContainer) {
+                    console.log("Creating new soil-type-container");
+                    soilTypeContainer = document.createElement("div");
+                    soilTypeContainer.classList.add("soil-type-container");
+                    soilTypeContainer.innerHTML = `
+                        <div class="soil-type-row">
+                            <span class="soil-type-label">Влажность, д.е.:</span>
+                            <input type="number" class="soil-humidity" placeholder="Влажность, д.е." aria-label="Влажность грунта">
+                        </div>
+                        <div class="soil-type-row">
+                            <button class="btn-calculate-soil-type" onclick="App.calculateSoilType(this)" aria-label="Рассчитать тип грунта">Рассчитать тип грунта</button>
+                        </div>
+                        <div class="soil-type-row">
+                            <span class="soil-type-label">Показатель текучести:</span>
+                            <div class="soil-type-value flowability-index">-</div>
+                        </div>
+                        <div class="soil-type-row">
+                            <span class="soil-type-label">Наименование грунта:</span>
+                            <div class="soil-type-value soil-type">-</div>
+                        </div>
+                    `;
+                    const actionRow = calcDiv.querySelector(".action-row");
+                    console.log("Action row found:", actionRow);
+                    if (actionRow && actionRow.parentNode === calcDiv) {
+                        calcDiv.insertBefore(soilTypeContainer, actionRow);
+                    } else {
+                        console.warn("Action row not found or not a child of calcDiv, appending to calcDiv");
+                        calcDiv.appendChild(soilTypeContainer);
+                    }
+                }
+                soilTypeContainer.classList.add("active");
+                console.log("soil-type-container set to active", soilTypeContainer);
+            },
+
+            calculateSoilType(btn) {
+                const soilTypeContainer = btn.closest(".soil-type-container");
+                const calcDiv = soilTypeContainer.closest(".calculation-container");
+                const upperLimitText = calcDiv.querySelector(".upper-limit-value").textContent.trim();
+                const lowerLimitText = calcDiv.querySelector(".lower-limit-value").textContent.trim();
+                const upperAvg = parseFloat(upperLimitText.replace(" д.е.", ""));
+                const lowerAvg = parseFloat(lowerLimitText.replace(" д.е.", ""));
+                const humidityInput = soilTypeContainer.querySelector(".soil-humidity");
+                const humidity = parseFloat(humidityInput.value);
+                const Ip = upperAvg - lowerAvg;
+                let flowabilityIndex = "Н/Д";
+                let soilType = "Н/Д";
+
+                console.log("calculateSoilType called", { humidity, Ip, inputValue: humidityInput.value });
+
+                if (isNaN(humidity) || humidityInput.value.trim() === "") {
+                    console.log("Invalid or empty humidity input");
+                    alert("Введите корректное значение влажности.");
+                    return;
+                }
+
+                if (Ip > 0) {
+                    flowabilityIndex = ((humidity - lowerAvg) / Ip).toFixed(3);
+                    if (Ip <= 7) {
+                        if (flowabilityIndex < 0) soilType = "супесь твердая";
+                        else if (flowabilityIndex <= 1) soilType = "супесь пластичная";
+                        else soilType = "супесь текучая";
+                    } else if (Ip <= 12) {
+                        if (flowabilityIndex < 0) soilType = "суглинок легкий твердый";
+                        else if (flowabilityIndex <= 0.25) soilType = "суглинок легкий полутвердый";
+                        else if (flowabilityIndex <= 0.50) soilType = "суглинок легкий тугопластичный";
+                        else if (flowabilityIndex <= 0.75) soilType = "суглинок легкий мягкопластичный";
+                        else if (flowabilityIndex <= 1.0) soilType = "суглинок легкий текучепластичный";
+                        else soilType = "суглинок легкий текучий";
+                    } else if (Ip <= 17) {
+                        if (flowabilityIndex < 0) soilType = "суглинок тяжелый твердый";
+                        else if (flowabilityIndex <= 0.25) soilType = "суглинок тяжелый полутвердый";
+                        else if (flowabilityIndex <= 0.50) soilType = "суглинок тяжелый тугопластичный";
+                        else if (flowabilityIndex <= 0.75) soilType = "суглинок тяжелый мягкопластичный";
+                        else if (flowabilityIndex <= 1.0) soilType = "суглинок тяжелый текучепластичный";
+                        else soilType = "суглинок тяжелый текучий";
+                    } else {
+                        if (flowabilityIndex < 0) soilType = "глина твердая";
+                        else if (flowabilityIndex <= 0.25) soilType = "глина полутвердая";
+                        else if (flowabilityIndex <= 0.50) soilType = "глина тугопластичная";
+                        else if (flowabilityIndex <= 0.75) soilType = "глина мягкопластичная";
+                        else if (flowabilityIndex <= 1.0) soilType = "глина текучепластичная";
+                        else soilType = "глина текучая";
+                    }
+                }
+
+                console.log("Soil type calculated", { flowabilityIndex, soilType });
+                soilTypeContainer.querySelector(".flowability-index").textContent = flowabilityIndex;
+                soilTypeContainer.querySelector(".soil-type").textContent = soilType;
+            },
+
+            exportToExcel() {
+                if (!window.XLSX) {
+                    console.error("SheetJS library is not loaded");
+                    alert("Ошибка: библиотека для экспорта не загружена.");
+                    return;
+                }
+
+                try {
+                    const tests = document.querySelectorAll("#tests-container .test-flex");
+                    const data = [];
+
+                    tests.forEach(test => {
+                        const mainInfoInputs = test.querySelectorAll(".main-info input");
+                        const labNumber = mainInfoInputs[0].value.trim();
+                        const wellNumber = mainInfoInputs[1].value.trim();
+                        const depth = mainInfoInputs[2].value.trim();
+                        const upperLimit = test.querySelector(".upper-limit-value").textContent.trim();
+                        const lowerLimit = test.querySelector(".lower-limit-value").textContent.trim();
+                        const plasticityNumber = test.querySelector(".plasticity-number-value")?.textContent.trim() || "-";
+                        const soilTypeContainer = test.querySelector(".soil-type-container");
+                        const humidity = soilTypeContainer ? soilTypeContainer.querySelector(".soil-humidity")?.value.trim() || "-" : "-";
+                        const flowabilityIndex = soilTypeContainer ? soilTypeContainer.querySelector(".flowability-index")?.textContent.trim() || "-" : "-";
+                        const soilType = soilTypeContainer ? soilTypeContainer.querySelector(".soil-type")?.textContent.trim() || "-" : "-";
+
+                        if (labNumber && wellNumber && depth && 
+                            (upperLimit !== "-" || lowerLimit !== "-" || plasticityNumber !== "-" || humidity !== "-" || flowabilityIndex !== "-" || soilType !== "-")) {
+                            data.push([labNumber, wellNumber, depth, upperLimit, lowerLimit, plasticityNumber, humidity, flowabilityIndex, soilType]);
+                        }
+                    });
+
+                    if (data.length === 0) {
+                        alert("Нет данных для экспорта. Заполните данные и выполните расчёт.");
+                        return;
+                    }
+
+                    const today = new Date();
+                    const dateStr = today.toISOString().split("T")[0];
+                    const ws_data = [
+                        ["Пределы пластичности"],
+                        [`Дата: ${dateStr}`],
+                        [],
+                        ["Лабораторный номер", "Номер скважины", "Глубина отбора", 
+                         "Верхний предел пластичности, д.е.", "Нижний предел пластичности, д.е.", 
+                         "Число пластичности, д.е.", "Влажность, д.е.", "Показатель текучести", "Наименование грунта"],
+                        ...data
+                    ];
+
+                    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+                    ws["A1"] = { v: "Пределы пластичности", s: { font: { name: "Arial", sz: 14, bold: true }, alignment: { horizontal: "center" } } };
+                    ws["A2"] = { v: `Дата: ${dateStr}`, s: { font: { name: "Arial", sz: 12 }, alignment: { horizontal: "left" } } };
+                    const headerRange = ["A4", "B4", "C4", "D4", "E4", "F4", "G4", "H4", "I4"];
+                    headerRange.forEach(cell => {
+                        ws[cell] = {
+                            ...ws[cell],
+                            s: {
+                                font: { name: "Arial", sz: 12, bold: true, color: { rgb: "FFFFFF" } },
+                                fill: { fgColor: { rgb: "2c3e50" } },
+                                alignment: { horizontal: "center" }
+                            }
+                        };
+                    });
+
+                    ws['!cols'] = [
+                        { wch: 20 },
+                        { wch: 20 },
+                        { wch: 20 },
+                        { wch: 25 },
+                        { wch: 25 },
+                        { wch: 20 },
+                        { wch: 15 },
+                        { wch: 20 },
+                        { wch: 25 }
+                    ];
+
+                    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }];
+
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Пределы пластичности");
+
+                    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+                    const blob = new Blob([wbout], { type: "application/octet-stream" });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `Пределы_Пластичности_${dateStr}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                } catch (error) {
+                    console.error("Export error:", error);
+                    alert("Ошибка при экспорте данных. Проверьте консоль браузера.");
+                }
+            }
+        };
+
+        App.init();
+    </script>
+</body>
+</html>
