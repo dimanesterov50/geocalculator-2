@@ -417,15 +417,16 @@
         .btn-calculate-soil-type {
             padding: 8px 14px;
             border-radius: 12px;
-            border: 2px solid #2e7d32;
-            background-color: #2e7d32;
+            border: 2px solid #4fc3f7;
+            background-color: #4fc3f7;
             color: white;
             cursor: pointer;
             font-size: 14px;
             font-weight: bold;
         }
         .btn-calculate-soil-type:hover {
-            background-color: #388e3c;
+            background-color: #29b6f6;
+            border-color: #29b6f6;
         }
 
         .btn-delete-sample {
@@ -878,43 +879,55 @@
             },
 
             setupEnterNavigation(calcDiv) {
-                const upperInputs = Array.from(calcDiv.querySelectorAll(".limit-block[data-limit='upper'] .sample-block:first-child input"));
-                const lowerInputs = Array.from(calcDiv.querySelectorAll(".limit-block[data-limit='lower'] .sample-block:first-child input"));
-                const inputs = [...upperInputs, ...lowerInputs];
-                const calcButton = calcDiv.querySelector(".btn-calc-green");
+                // Собираем все поля ввода input[type="number"] внутри calcDiv
+                const inputs = Array.from(calcDiv.querySelectorAll('input[type="number"]'));
+                console.log(`Setting up Enter navigation for ${inputs.length} inputs:`, inputs.map(input => input.className));
 
-                // Удаляем старые обработчики событий
+                // Очищаем старые обработчики
                 inputs.forEach(input => {
-                    input.removeEventListener("keydown", this.handleEnterKey);
+                    if (input._handleEnterKey) {
+                        input.removeEventListener("keydown", input._handleEnterKey);
+                        input._handleEnterKey = null;
+                    }
                 });
 
-                // Добавляем новые обработчики
-                inputs.forEach((input, index) => {
-                    input.addEventListener("keydown", (event) => {
-                        console.log(`Enter pressed on input ${index + 1}: ${input.className}`);
-                        if (event.key === "Enter") {
-                            event.preventDefault();
-                            if (index < inputs.length - 1) {
-                                console.log(`Focusing next input: ${index + 2}`);
-                                inputs[index + 1].focus();
+                // Создаём новый обработчик
+                const handleEnterKey = (event) => {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        const currentIndex = inputs.indexOf(event.target);
+                        console.log(`Enter pressed on input ${currentIndex + 1}: ${event.target.className}`);
+
+                        if (currentIndex < inputs.length - 1) {
+                            // Переход к следующему полю
+                            console.log(`Focusing next input: ${currentIndex + 2} (${inputs[currentIndex + 1].className})`);
+                            inputs[currentIndex + 1].focus();
+                        } else {
+                            // На последнем поле
+                            if (event.target.classList.contains("soil-humidity")) {
+                                // Если это soil-humidity, вызываем calculateSoilType
+                                console.log("Triggering calculateSoilType for soil-humidity");
+                                const soilTypeButton = calcDiv.querySelector(".btn-calculate-soil-type");
+                                if (soilTypeButton) {
+                                    soilTypeButton.click();
+                                }
                             } else {
-                                const allFilled = inputs.every(input => input.value.trim() !== "");
-                                console.log(`All fields filled: ${allFilled}`);
-                                if (allFilled && calcButton) {
-                                    console.log("Focusing and triggering calculate button");
-                                    calcButton.focus();
-                                    calcButton.click(); // Программно вызываем calculateTest
-                                } else {
-                                    console.log("Not all fields are filled, skipping calculation");
+                                // Иначе вызываем calculateTest
+                                console.log("Triggering calculateTest for last input");
+                                const calcButton = calcDiv.querySelector(".btn-calc-green");
+                                if (calcButton) {
+                                    calcButton.click();
                                 }
                             }
                         }
-                    });
-                });
-            },
+                    }
+                };
 
-            handleEnterKey(event) {
-                // Этот метод теперь не используется, но оставлен для совместимости
+                // Привязываем обработчик к каждому полю
+                inputs.forEach(input => {
+                    input._handleEnterKey = handleEnterKey;
+                    input.addEventListener("keydown", handleEnterKey);
+                });
             }
         };
 
