@@ -109,7 +109,7 @@
         }
         .header-text p {
             font-size: 16px;
-            color: #7f8c8d;
+            color: #000000;
         }
 
         #tests-container {
@@ -137,41 +137,9 @@
             display: flex;
             align-items: flex-start;
             justify-content: center;
-            gap: 10px;
             width: 100%;
             max-width: 620px;
             margin: 0 auto;
-            position: relative;
-        }
-
-        .main-info {
-            border: 2px solid #2c3e50;
-            border-radius: 12px;
-            padding: 10px 15px;
-            background-color: rgba(255, 255, 255, 0.95);
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            min-width: 180px;
-            max-width: 200px;
-            transition: max-height 0.5s ease, padding 0.5s ease, border 0.5s ease;
-            overflow: hidden;
-        }
-        .main-info.collapsed {
-            max-height: 0;
-            padding: 0 15px;
-            border: 0;
-        }
-        .main-info label {
-            display: flex;
-            flex-direction: column;
-            font-size: 14px;
-        }
-        .main-info input {
-            padding: 4px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 13px;
         }
 
         .calculation-container {
@@ -220,11 +188,11 @@
         }
         .sample-row {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 8px;
         }
         .sample-row input {
-            flex: 1 1 30%;
+            width: 100%;
             padding: 6px;
             border-radius: 6px;
             border: 1px solid #ccc;
@@ -333,25 +301,12 @@
             cursor: pointer;
             font-size: 14px;
             font-weight: bold;
-            margin-top: 0;
-            display: block;
+            position: absolute;
+            top: 0;
+            right: 0;
         }
-
-        .toggle-info-btn {
-            padding: 4px 8px;
-            border-radius: 10px;
-            border: 2px solid #2c3e50;
-            background-color: #2c3e50;
-            color: white;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-            margin-top: 0;
-            display: block;
-        }
-        .toggle-info-btn:hover {
-            background-color: #34495e;
+        .delete-btn:hover {
+            background-color: #c0392b;
         }
 
         .action-btn {
@@ -395,42 +350,23 @@
                 max-width: 600px;
                 margin: 0 auto;
             }
-            .main-info {
-                order: -1;
-                width: 100%;
-                min-width: 200px;
-                max-width: 300px;
-                margin: 10px auto 0 auto;
-                display: flex;
-            }
             .calculation-container {
-                order: 0;
                 width: 100%;
                 max-width: 90%;
                 min-width: 320px;
                 margin: 0 auto;
                 box-sizing: border-box;
             }
-            .toggle-info-btn {
-                order: -2;
-                margin-bottom: 10px;
-                align-self: flex-start;
-                margin-left: 0;
-                display: block;
-            }
             .delete-btn {
-                order: 1;
+                position: static;
                 margin-top: 10px;
                 align-self: flex-end;
-                margin-right: 0;
-                margin-left: 0;
-                display: block;
             }
             .sample-row {
                 flex-direction: column;
             }
             .sample-row input {
-                flex: 1 1 100%;
+                width: 100%;
             }
             .average-container {
                 width: 100%;
@@ -467,14 +403,13 @@
 
     <div class="header-text">
         <h1>Влажность грунта</h1>
-        <p><font color="black">Введите данные для расчета влажности грунта в таблицу ниже. Для каждого испытания вводятся данные образцов, на основе которых рассчитывается средняя влажность грунта в д.е. и в %. Расчет ведется в соответствии с ГОСТ 5180-2015</font></p>
+        <p>Введите данные для расчета влажности грунта в таблицу ниже. Для каждого испытания вводятся данные образцов, на основе которых рассчитывается средняя влажность грунта в д.е. и в %. Расчет ведется в соответствии с ГОСТ 5180-2015</p>
     </div>
 
     <div id="tests-container"></div>
 
     <div style="text-align: center; margin-top: 25px;">
         <button class="action-btn" onclick="App.addTest()" aria-label="Добавить новое испытание">+ Добавить испытание</button>
-        <button class="action-btn" onclick="App.exportToExcel()" aria-label="Экспорт в Excel">Экспорт в Excel</button>
     </div>
 
     <script>
@@ -487,7 +422,6 @@
                         console.log("SheetJS library loaded successfully");
                     }
                     this.addTest();
- Sy;
                 });
             },
 
@@ -499,6 +433,27 @@
                 location.href = url;
             },
 
+            focusNextInput(event, input) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    const calcDiv = input.closest(".calculation-container");
+                    const sampleBlocks = Array.from(calcDiv.querySelectorAll(".sample-block"));
+                    const allInputs = Array.from(calcDiv.querySelectorAll(".sample-row input"));
+                    const currentIndex = allInputs.indexOf(input);
+                    const currentSampleBlock = input.closest(".sample-block");
+                    const currentSampleIndex = sampleBlocks.indexOf(currentSampleBlock);
+
+                    if (currentIndex === allInputs.length - 1 && currentSampleIndex === sampleBlocks.length - 1) {
+                        // Последнее поле последнего sample-block → запуск расчёта
+                        this.calculateTest(calcDiv.querySelector(".btn-calc-green"));
+                    } else {
+                        // Переход к следующему полю
+                        const nextIndex = (currentIndex + 1) % allInputs.length;
+                        allInputs[nextIndex].focus();
+                    }
+                }
+            },
+
             addTest() {
                 const container = document.getElementById("tests-container");
                 const testFlex = document.createElement("div");
@@ -507,33 +462,15 @@
                 const calcWrapper = document.createElement("div");
                 calcWrapper.classList.add("calc-wrapper");
 
-                const toggleBtn = document.createElement("button");
-                toggleBtn.classList.add("toggle-info-btn");
-                toggleBtn.textContent = "+";
-                toggleBtn.setAttribute("aria-label", "Раскрыть информацию об испытании");
-
-                const mainInfo = document.createElement("div");
-                mainInfo.classList.add("main-info", "collapsed");
-                mainInfo.innerHTML = `
-                    <label>Лабораторный номер: <input type="text" aria-label="Лабораторный номер"></label>
-                    <label>Номер скважины: <input type="text" aria-label="Номер скважины"></label>
-                    <label>Глубина отбора: <input type="text" aria-label="Глубина отбора"></label>
-                `;
-
-                toggleBtn.onclick = () => {
-                    mainInfo.classList.toggle("collapsed");
-                    toggleBtn.textContent = mainInfo.classList.contains("collapsed") ? "+" : "–";
-                };
-
                 const calcDiv = document.createElement("div");
                 calcDiv.classList.add("calculation-container");
                 calcDiv.innerHTML = `
                     <div class="sample-block">
                         <div class="sample-content">
                             <div class="sample-row">
-                                <input type="number" class="empty-box" placeholder="Пустой бюкс, г" aria-label="Вес пустого бюкса">
-                                <input type="number" class="wet-box" placeholder="Влажный грунт, г" aria-label="Вес влажного грунта">
-                                <input type="number" class="dry-box" placeholder="Сухой грунт, г" aria-label="Вес сухого грунта">
+                                <input type="number" class="empty-box" placeholder="Пустой бюкс, г" aria-label="Вес пустого бюкса" onkeypress="App.focusNextInput(event, this)">
+                                <input type="number" class="wet-box" placeholder="Влажный грунт, г" aria-label="Вес влажного грунта" onkeypress="App.focusNextInput(event, this)">
+                                <input type="number" class="dry-box" placeholder="Сухой грунт, г" aria-label="Вес сухого грунта" onkeypress="App.focusNextInput(event, this)">
                             </div>
                         </div>
                         <div class="sample-result">-</div>
@@ -551,17 +488,13 @@
                     </div>
                 `;
 
-                const deleteBtn = document.createElement("button");
-                deleteBtn.classList.add("delete-btn");
-                deleteBtn.textContent = "Удалить";
-                deleteBtn.setAttribute("aria-label", "Удалить испытание");
-                deleteBtn.onclick = () => testFlex.remove();
-
-                calcWrapper.appendChild(toggleBtn);
-                calcWrapper.appendChild(mainInfo);
                 calcWrapper.appendChild(calcDiv);
-                calcWrapper.appendChild(deleteBtn);
                 testFlex.appendChild(calcWrapper);
+                testFlex.appendChild(document.createElement("button"));
+                testFlex.lastChild.classList.add("delete-btn");
+                testFlex.lastChild.textContent = "Удалить";
+                testFlex.lastChild.setAttribute("aria-label", "Удалить испытание");
+                testFlex.lastChild.onclick = () => testFlex.remove();
                 container.appendChild(testFlex);
             },
 
@@ -574,9 +507,9 @@
                 sampleBlock.innerHTML = `
                     <div class="sample-content">
                         <div class="sample-row">
-                            <input type="number" class="empty-box" placeholder="Пустой бюкс, г" aria-label="Вес пустого бюкса">
-                            <input type="number" class="wet-box" placeholder="Влажный грунт, г" aria-label="Вес влажного грунта">
-                            <input type="number" class="dry-box" placeholder="Сухой грунт, г" aria-label="Вес сухого грунта">
+                            <input type="number" class="empty-box" placeholder="Пустой бюкс, г" aria-label="Вес пустого бюкса" onkeypress="App.focusNextInput(event, this)">
+                            <input type="number" class="wet-box" placeholder="Влажный грунт, г" aria-label="Вес влажного грунта" onkeypress="App.focusNextInput(event, this)">
+                            <input type="number" class="dry-box" placeholder="Сухой грунт, г" aria-label="Вес сухого грунта" onkeypress="App.focusNextInput(event, this)">
                         </div>
                     </div>
                     <div class="sample-result">-</div>
@@ -626,95 +559,6 @@
 
                 const avg = humidities.length >= 1 ? humidities.reduce((a, b) => a + b, 0) / humidities.length : null;
                 calcDiv.querySelector(".humidity-value").textContent = avg ? `${avg.toFixed(3)} ед. (${(avg * 100).toFixed(2)}%)` : "Н/Д";
-            },
-
-            exportToExcel() {
-                if (!window.XLSX) {
-                    console.error("SheetJS library is not loaded");
-                    alert("Ошибка: библиотека для экспорта не загружена. Попробуйте использовать локальную копию библиотеки или проверьте подключение к интернету.");
-                    return;
-                }
-
-                try {
-                    const tests = document.querySelectorAll(".test-flex");
-                    const data = [];
-
-                    tests.forEach((test, index) => {
-                        const mainInfoInputs = test.querySelectorAll(".main-info input");
-                        const labNumber = mainInfoInputs[0].value.trim();
-                        const wellNumber = mainInfoInputs[1].value.trim();
-                        const depth = mainInfoInputs[2].value.trim();
-                        const avgHumidity = test.querySelector(".humidity-value").textContent.trim();
-
-                        if (labNumber && wellNumber && depth && avgHumidity !== "-" && avgHumidity !== "Н/Д") {
-                            data.push([
-                                labNumber,
-                                wellNumber,
-                                depth,
-                                avgHumidity
-                            ]);
-                        }
-                    });
-
-                    if (data.length === 0) {
-                        alert("Нет данных для экспорта. Заполните данные и выполните расчёт");
-                        return;
-                    }
-
-                    const today = new Date();
-                    const dateStr = today.toISOString().split("T")[0];
-                    const ws_data = [
-                        ["Результаты испытаний на влажность грунта"],
-                        [`Дата: ${dateStr}`],
-                        [],
-                        ["Лабораторный номер", "Номер скважины", "Глубина отбора", "Средняя влажность"],
-                        ...data
-                    ];
-
-                    const ws = XLSX.utils.aoa_to_sheet(ws_data);
-
-                    ws["A1"] = { v: "Результаты испытаний на влажность грунта", s: { font: { name: "Arial", sz: 14, bold: true }, alignment: { horizontal: "center" } } };
-                    ws["A2"] = { v: `Дата: ${dateStr}`, s: { font: { name: "Arial", sz: 12 }, alignment: { horizontal: "left" } } };
-                    const headerRange = ["A4", "B4", "C4", "D4"];
-                    headerRange.forEach(cell => {
-                        ws[cell] = {
-                            ...ws[cell],
-                            s: {
-                                font: { name: "Arial", sz: 12, bold: true, color: { rgb: "FFFFFF" } },
-                                fill: { fgColor: { rgb: "2c3e50" } },
-                                alignment: { horizontal: "center" }
-                            }
-                        };
-                    });
-
-                    ws['!cols'] = [
-                        { wch: 20 },
-                        { wch: 20 },
-                        { wch: 20 },
-                        { wch: 25 }
-                    ];
-
-                    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
-
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, "Влажность грунта");
-
-                    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-                    const blob = new Blob([wbout], { type: "application/octet-stream" });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `Влажность_Грунта_${dateStr}.xlsx`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-
-                    console.log("Excel file generated successfully");
-                } catch (error) {
-                    console.error("Export error:", error);
-                    alert("Ошибка при экспорте данных. Проверьте консоль браузера для деталей.");
-                }
             }
         };
 

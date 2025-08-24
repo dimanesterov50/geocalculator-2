@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Пределы пластичности</title>
-    <script src="https://unpkg.com/xlsx@0.21.0/dist/xlsx.full.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -109,7 +108,7 @@
         }
         .header-text p {
             font-size: 16px;
-            color: #e74c3c;
+            color: #000000;
         }
 
         .test-container {
@@ -126,9 +125,9 @@
 
         .test-flex {
             display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            gap: 15px;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
             opacity: 0;
             transform: translateY(20px);
             animation: slideIn 0.5s ease forwards;
@@ -140,43 +139,12 @@
 
         .calc-wrapper {
             display: flex;
+            flex-direction: column;
             align-items: flex-start;
-            justify-content: center;
-            gap: 10px;
             width: 100%;
-            max-width: 620px;
+            max-width: 880px;
             margin: 0 auto;
             position: relative;
-        }
-
-        .main-info {
-            border: 2px solid #2c3e50;
-            border-radius: 12px;
-            padding: 10px 15px;
-            background-color: rgba(255, 255, 255, 0.95);
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            min-width: 180px;
-            max-width: 200px;
-            transition: max-height 0.5s ease, padding 0.5s ease, border 0.5s ease;
-            overflow: hidden;
-        }
-        .main-info.collapsed {
-            max-height: 0;
-            padding: 0 15px;
-            border: 0;
-        }
-        .main-info label {
-            display: flex;
-            flex-direction: column;
-            font-size: 14px;
-        }
-        .main-info input {
-            padding: 4px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 13px;
         }
 
         .calculation-container {
@@ -185,15 +153,26 @@
             padding: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             background-color: rgba(255, 255, 255, 0.9);
-            min-width: 500px;
-            max-width: 620px;
+            min-width: 700px;
+            max-width: 800px;
             margin: 0 auto;
-            display: block;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .limit-blocks {
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            justify-content: center;
         }
 
         .limit-block {
-            margin-bottom: 15px;
+            min-width: 340px;
+            max-width: 380px;
+            flex: 1;
         }
         .limit-block h3 {
             font-size: 16px;
@@ -234,7 +213,7 @@
         }
         .sample-row {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 8px;
         }
         .sample-row input {
@@ -258,6 +237,11 @@
             justify-content: space-between;
             align-items: center;
             margin-top: 8px;
+        }
+        .action-row.buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
         }
 
         .action-btn {
@@ -329,15 +313,16 @@
         .btn-determine-soil {
             padding: 8px 14px;
             border-radius: 12px;
-            border: 2px solid #2c3e50;
-            background-color: #2c3e50;
+            border: 2px solid #4fc3f7;
+            background-color: #4fc3f7;
             color: white;
             cursor: pointer;
             font-size: 14px;
             font-weight: bold;
         }
         .btn-determine-soil:hover {
-            background-color: #34495e;
+            background-color: #29b6f6;
+            border-color: #29b6f6;
         }
 
         .average-row {
@@ -360,11 +345,21 @@
             text-align: right;
         }
 
+        .action-and-results {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
         .plasticity-number-container {
             display: none;
             margin-top: 10px;
             padding: 8px;
             background-color: rgba(240, 248, 255, 0.5);
+            width: 100%;
         }
         .plasticity-number-container.active {
             display: flex;
@@ -388,6 +383,7 @@
             margin-top: 10px;
             padding: 8px;
             background-color: rgba(240, 248, 255, 0.5);
+            width: 100%;
         }
         .soil-type-container.active {
             display: flex;
@@ -450,6 +446,9 @@
         }
 
         .delete-btn {
+            position: absolute;
+            top: 0;
+            right: -80px;
             padding: 6px 12px;
             border-radius: 10px;
             border: 1px solid #e74c3c;
@@ -458,25 +457,7 @@
             cursor: pointer;
             font-size: 14px;
             font-weight: bold;
-            margin-top: 0;
-            display: block;
-        }
-
-        .toggle-info-btn {
-            padding: 4px 8px;
-            border-radius: 10px;
-            border: 2px solid #2c3e50;
-            background-color: #2c3e50;
-            color: white;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-            margin-top: 0;
-            display: block;
-        }
-        .toggle-info-btn:hover {
-            background-color: #34495e;
+            z-index: 5;
         }
 
         @keyframes slideIn {
@@ -498,42 +479,36 @@
                 align-items: center;
             }
             .calc-wrapper {
-                flex-direction: column;
-                align-items: center;
                 width: 100%;
-                max-width: 600px;
+                max-width: 90%;
                 margin: 0 auto;
-            }
-            .main-info {
-                order: -1;
-                width: 100%;
-                min-width: 200px;
-                max-width: 300px;
-                margin: 10px auto 0 auto;
-                display: flex;
+                position: relative;
             }
             .calculation-container {
-                order: 0;
+                flex-direction: column;
                 width: 100%;
                 max-width: 90%;
                 min-width: 320px;
                 margin: 0 auto;
                 box-sizing: border-box;
             }
-            .toggle-info-btn {
-                order: -2;
-                margin-bottom: 10px;
-                align-self: flex-start;
-                margin-left: 0;
-                display: block;
+            .limit-blocks {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .limit-block {
+                min-width: 100%;
+                max-width: 100%;
+            }
+            .limit-block[data-limit="upper"] {
+                border-bottom: 1px solid rgba(44, 62, 80, 0.3);
             }
             .delete-btn {
-                order: 1;
-                margin-top: 10px;
+                position: static;
                 align-self: flex-end;
+                margin-top: 10px;
+                margin-bottom: 10px;
                 margin-right: 0;
-                margin-left: 0;
-                display: block;
             }
             .sample-row {
                 flex-direction: column;
@@ -548,12 +523,23 @@
                 top: 4px;
                 right: 4px;
             }
+            .action-and-results {
+                width: 100%;
+            }
+            .action-row.buttons {
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+            }
         }
 
         @media screen and (max-width: 400px) {
             .calculation-container {
                 min-width: 280px;
                 max-width: 90%;
+            }
+            .limit-block {
+                min-width: 100%;
             }
         }
     </style>
@@ -575,14 +561,13 @@
 
     <div class="header-text">
         <h1>Пределы пластичности</h1>
-        <p style="color: #000000;">Введите данные для расчёта верхнего и нижнего пределов пластичности грунта. Добавляйте необходимое количество образцов для каждого предела, чтобы получить средние значения. После расчёта можно определить число пластичности и тип грунта. <br>Расчёт ведётся в соответствии с ГОСТ 5180-2015.</br></p>
+        <p>Введите данные для расчёта верхнего и нижнего пределов пластичности грунта. Добавляйте необходимое количество образцов для каждого предела, чтобы получить средние значения. После расчёта можно определить число пластичности и тип грунта. <br>Расчёт ведётся в соответствии с ГОСТ 5180-2015.</p>
     </div>
 
     <div id="test-container" class="test-container">
         <div class="tests-container" id="tests-container"></div>
         <div style="text-align: center; margin-top: 25px;">
             <button class="action-btn always-active" onclick="App.addTest()" aria-label="Добавить новое испытание">+ Добавить испытание</button>
-            <button class="action-btn always-active" onclick="App.exportToExcel()" aria-label="Экспорт в Excel">Экспорт в Excel</button>
         </div>
     </div>
 
@@ -590,11 +575,6 @@
         const App = {
             init() {
                 document.addEventListener('DOMContentLoaded', () => {
-                    if (!window.XLSX) {
-                        console.error("SheetJS library is not loaded");
-                    } else {
-                        console.log("SheetJS library loaded successfully");
-                    }
                     console.log('Plasticity page loaded');
                     this.addTest();
                 });
@@ -616,78 +596,62 @@
                 const calcWrapper = document.createElement("div");
                 calcWrapper.classList.add("calc-wrapper");
 
-                const toggleBtn = document.createElement("button");
-                toggleBtn.classList.add("toggle-info-btn");
-                toggleBtn.textContent = "+";
-                toggleBtn.setAttribute("aria-label", "Раскрыть информацию об испытании");
-
-                const mainInfo = document.createElement("div");
-                mainInfo.classList.add("main-info", "collapsed");
-                mainInfo.innerHTML = `
-                    <label>Лабораторный номер: <input type="text" aria-label="Лабораторный номер"></label>
-                    <label>Номер скважины: <input type="text" aria-label="Номер скважины"></label>
-                    <label>Глубина отбора: <input type="text" aria-label="Глубина отбора"></label>
-                `;
-
-                toggleBtn.onclick = () => {
-                    mainInfo.classList.toggle("collapsed");
-                    toggleBtn.textContent = mainInfo.classList.contains("collapsed") ? "+" : "–";
-                };
-
                 const calcDiv = document.createElement("div");
                 calcDiv.classList.add("calculation-container");
 
                 calcDiv.innerHTML = `
-                    <div class="limit-block" data-limit="upper">
-                        <h3>Верхний предел пластичности</h3>
-                        <div class="sample-block">
-                            <div class="sample-content">
-                                <div class="sample-row">
-                                    <input type="number" class="empty-bux-weight" placeholder="Вес пустого бюкса, г" aria-label="Вес пустого бюкса">
-                                    <input type="number" class="wet-soil-bux-weight" placeholder="Вес бюкса с влажным грунтом, г" aria-label="Вес бюкса с влажным грунтом">
-                                    <input type="number" class="dry-soil-bux-weight" placeholder="Вес бюкса с сухим грунтом, г" aria-label="Вес бюкса с сухим грунтом">
+                    <div class="limit-blocks">
+                        <div class="limit-block" data-limit="upper">
+                            <h3>Верхний предел пластичности</h3>
+                            <div class="sample-block">
+                                <div class="sample-content">
+                                    <div class="sample-row">
+                                        <input type="number" step="any" class="empty-bux-weight" placeholder="Вес пустого бюкса, г" aria-label="Вес пустого бюкса">
+                                        <input type="number" step="any" class="wet-soil-bux-weight" placeholder="Вес бюкса с влажным грунтом, г" aria-label="Вес бюкса с влажным грунтом">
+                                        <input type="number" step="any" class="dry-soil-bux-weight" placeholder="Вес бюкса с сухим грунтом, г" aria-label="Вес бюкса с сухим грунтом">
+                                    </div>
+                                </div>
+                                <div class="sample-result">-</div>
+                            </div>
+                            <div class="average-row">
+                                <span class="average-label">Среднее:</span>
+                                <span class="limit-value">-</span>
+                            </div>
+                            <div class="action-row">
+                                <div>
+                                    <button class="btn-add-sample" onclick="App.addSample(this, 'upper')" aria-label="Добавить образец для верхнего предела">Добавить образец</button>
                                 </div>
                             </div>
-                            <div class="sample-result">-</div>
                         </div>
-                        <div class="action-row">
-                            <div>
-                                <button class="btn-add-sample" onclick="App.addSample(this, 'upper')" aria-label="Добавить образец для верхнего предела">Добавить образец</button>
+                        <div class="limit-block" data-limit="lower">
+                            <h3>Нижний предел пластичности</h3>
+                            <div class="sample-block">
+                                <div class="sample-content">
+                                    <div class="sample-row">
+                                        <input type="number" step="any" class="empty-bux-weight" placeholder="Вес пустого бюкса, г" aria-label="Вес пустого бюкса">
+                                        <input type="number" step="any" class="wet-soil-bux-weight" placeholder="Вес бюкса с влажным грунтом, г" aria-label="Вес бюкса с влажным грунтом">
+                                        <input type="number" step="any" class="dry-soil-bux-weight" placeholder="Вес бюкса с сухим грунтом, г" aria-label="Вес бюкса с сухим грунтом">
+                                    </div>
+                                </div>
+                                <div class="sample-result">-</div>
                             </div>
-                        </div>
-                        <div class="average-row">
-                            <span class="average-label">Среднее:</span>
-                            <span class="limit-value">-</span>
-                        </div>
-                    </div>
-                    <div class="limit-block" data-limit="lower">
-                        <h3>Нижний предел пластичности</h3>
-                        <div class="sample-block">
-                            <div class="sample-content">
-                                <div class="sample-row">
-                                    <input type="number" class="empty-bux-weight" placeholder="Вес пустого бюкса, г" aria-label="Вес пустого бюкса">
-                                    <input type="number" class="wet-soil-bux-weight" placeholder="Вес бюкса с влажным грунтом, г" aria-label="Вес бюкса с влажным грунтом">
-                                    <input type="number" class="dry-soil-bux-weight" placeholder="Вес бюкса с сухим грунтом, г" aria-label="Вес бюкса с сухим грунтом">
+                            <div class="average-row">
+                                <span class="average-label">Среднее:</span>
+                                <span class="limit-value">-</span>
+                            </div>
+                            <div class="action-row">
+                                <div>
+                                    <button class="btn-add-sample" onclick="App.addSample(this, 'lower')" aria-label="Добавить образец для нижнего предела">Добавить образец</button>
                                 </div>
                             </div>
-                            <div class="sample-result">-</div>
-                        </div>
-                        <div class="action-row">
-                            <div>
-                                <button class="btn-add-sample" onclick="App.addSample(this, 'lower')" aria-label="Добавить образец для нижнего предела">Добавить образец</button>
-                            </div>
-                        </div>
-                        <div class="average-row">
-                            <span class="average-label">Среднее:</span>
-                            <span class="limit-value">-</span>
                         </div>
                     </div>
-                    <div class="plasticity-number-container">
-                        <span class="plasticity-number-label">Число пластичности:</span>
-                        <div class="plasticity-number-value">-</div>
-                    </div>
-                    <div class="action-row">
-                        <div>
+                    <div class="action-and-results">
+                        <div class="plasticity-number-container">
+                            <span class="plasticity-number-label">Число пластичности:</span>
+                            <div class="plasticity-number-value">-</div>
+                        </div>
+                        <div class="action-row buttons">
                             <button class="btn-calc-green" onclick="App.calculateTest(this)" aria-label="Рассчитать">Рассчитать</button>
                             <button class="btn-clear" onclick="App.clearTest(this)" aria-label="Очистить поля">Очистить</button>
                             <button class="btn-determine-soil" onclick="App.determineSoil(this)" aria-label="Определить грунт">Определить грунт</button>
@@ -695,8 +659,6 @@
                     </div>
                 `;
 
-                calcWrapper.appendChild(toggleBtn);
-                calcWrapper.appendChild(mainInfo);
                 calcWrapper.appendChild(calcDiv);
                 calcWrapper.appendChild(document.createElement("button"));
                 calcWrapper.lastChild.classList.add("delete-btn");
@@ -705,6 +667,8 @@
                 calcWrapper.lastChild.onclick = () => testFlex.remove();
                 testFlex.appendChild(calcWrapper);
                 container.appendChild(testFlex);
+
+                this.setupEnterNavigation(calcDiv);
             },
 
             addSample(btn, limit) {
@@ -716,24 +680,25 @@
 
                 sampleBlock.innerHTML = `
                     <div class="sample-content">
-                        <h4>Образец ${sampleCount}</h4>
                         <div class="sample-row">
-                            <input type="number" class="empty-bux-weight" placeholder="Вес пустого бюкса, г" aria-label="Вес пустого бюкса">
-                            <input type="number" class="wet-soil-bux-weight" placeholder="Вес бюкса с влажным грунтом, г" aria-label="Вес бюкса с влажным грунтом">
-                            <input type="number" class="dry-soil-bux-weight" placeholder="Вес бюкса с сухим грунтом, г" aria-label="Вес бюкса с сухим грунтом">
+                            <input type="number" step="any" class="empty-bux-weight" placeholder="Вес пустого бюкса, г" aria-label="Вес пустого бюкса">
+                            <input type="number" step="any" class="wet-soil-bux-weight" placeholder="Вес бюкса с влажным грунтом, г" aria-label="Вес бюкса с влажным грунтом">
+                            <input type="number" step="any" class="dry-soil-bux-weight" placeholder="Вес бюкса с сухим грунтом, г" aria-label="Вес бюкса с сухим грунтом">
                         </div>
                     </div>
                     <div class="sample-result">-</div>
                     <button class="btn-delete-sample" onclick="App.deleteSample(this)" aria-label="Удалить образец">—</button>
                 `;
 
-                limitBlock.insertBefore(sampleBlock, limitBlock.querySelector(".action-row"));
+                limitBlock.insertBefore(sampleBlock, limitBlock.querySelector(".average-row"));
+                this.setupEnterNavigation(btn.closest(".calculation-container"));
             },
 
             deleteSample(btn) {
                 const calcDiv = btn.closest(".calculation-container");
                 btn.closest(".sample-block").remove();
                 this.calculateTest(calcDiv.querySelector(".btn-calc-green"));
+                this.setupEnterNavigation(calcDiv);
             },
 
             clearTest(btn) {
@@ -753,6 +718,7 @@
                 calcDiv.querySelector(".plasticity-number-value").textContent = "-";
                 const soilTypeContainer = calcDiv.querySelector(".soil-type-container");
                 if (soilTypeContainer) soilTypeContainer.remove();
+                this.setupEnterNavigation(calcDiv);
             },
 
             calculateTest(btn) {
@@ -762,7 +728,6 @@
                 let upperLimitValues = [];
                 let lowerLimitValues = [];
 
-                // Верхний предел пластичности
                 upperLimitBlock.querySelectorAll(".sample-block").forEach(sample => {
                     const emptyBux = parseFloat(sample.querySelector(".empty-bux-weight").value);
                     const wetSoilBux = parseFloat(sample.querySelector(".wet-soil-bux-weight").value);
@@ -779,7 +744,6 @@
                     upperLimitValues.push(limit);
                 });
 
-                // Нижний предел пластичности
                 lowerLimitBlock.querySelectorAll(".sample-block").forEach(sample => {
                     const emptyBux = parseFloat(sample.querySelector(".empty-bux-weight").value);
                     const wetSoilBux = parseFloat(sample.querySelector(".wet-soil-bux-weight").value);
@@ -796,7 +760,6 @@
                     lowerLimitValues.push(limit);
                 });
 
-                // Средние значения
                 const upperAvg = upperLimitValues.length >= 1 
                     ? upperLimitValues.reduce((sum, val) => sum + val, 0) / upperLimitValues.length 
                     : null;
@@ -807,7 +770,6 @@
                     : null;
                 lowerLimitBlock.querySelector(".limit-value").textContent = lowerAvg ? `${lowerAvg.toFixed(3)}` : "-";
 
-                // Число пластичности
                 const plasticityContainer = calcDiv.querySelector(".plasticity-number-container");
                 if (upperAvg && lowerAvg) {
                     const plasticityNumber = upperAvg - lowerAvg;
@@ -818,7 +780,6 @@
                     plasticityContainer.querySelector(".plasticity-number-value").textContent = "-";
                 }
 
-                // Удаление поля типа грунта, если оно было
                 const soilTypeContainer = calcDiv.querySelector(".soil-type-container");
                 if (soilTypeContainer) soilTypeContainer.remove();
             },
@@ -830,23 +791,19 @@
                 const upperAvg = parseFloat(upperLimitText);
                 const lowerAvg = parseFloat(lowerLimitText);
 
-                console.log("determineSoil called", { upperLimitText, lowerLimitText, upperAvg, lowerAvg });
-
                 if (isNaN(upperAvg) || isNaN(lowerAvg) || upperLimitText === "-" || lowerLimitText === "-") {
-                    console.log("Cannot determine soil: invalid or missing limits");
                     alert("Рассчитайте оба предела пластичности перед определением типа грунта.");
                     return;
                 }
 
                 let soilTypeContainer = calcDiv.querySelector(".soil-type-container");
                 if (!soilTypeContainer) {
-                    console.log("Creating new soil-type-container");
                     soilTypeContainer = document.createElement("div");
                     soilTypeContainer.classList.add("soil-type-container");
                     soilTypeContainer.innerHTML = `
                         <div class="soil-type-row">
                             <span class="soil-type-label">Влажность, д.е.:</span>
-                            <input type="number" class="soil-humidity" placeholder="Влажность, д.е." aria-label="Влажность грунта">
+                            <input type="number" step="any" class="soil-humidity" placeholder="Влажность, д.е." aria-label="Влажность грунта">
                         </div>
                         <div class="soil-type-row">
                             <button class="btn-calculate-soil-type" onclick="App.calculateSoilType(this)" aria-label="Рассчитать тип грунта">Рассчитать тип грунта</button>
@@ -860,17 +817,11 @@
                             <div class="soil-type-value soil-type">-</div>
                         </div>
                     `;
-                    const actionRow = calcDiv.querySelector(".action-row:last-of-type");
-                    console.log("Action row found:", actionRow);
-                    if (actionRow && actionRow.parentNode === calcDiv) {
-                        calcDiv.insertBefore(soilTypeContainer, actionRow);
-                    } else {
-                        console.warn("Action row not found or not a child of calcDiv, appending to calcDiv");
-                        calcDiv.appendChild(soilTypeContainer);
-                    }
+                    const actionRow = calcDiv.querySelector(".action-and-results .action-row");
+                    calcDiv.querySelector(".action-and-results").insertBefore(soilTypeContainer, actionRow);
                 }
                 soilTypeContainer.classList.add("active");
-                console.log("soil-type-container set to active", soilTypeContainer);
+                this.setupEnterNavigation(calcDiv);
             },
 
             calculateSoilType(btn) {
@@ -886,10 +837,7 @@
                 let flowabilityIndex = "Н/Д";
                 let soilType = "Н/Д";
 
-                console.log("calculateSoilType called", { humidity, Ip, inputValue: humidityInput.value });
-
                 if (isNaN(humidity) || humidityInput.value.trim() === "") {
-                    console.log("Invalid or empty humidity input");
                     alert("Введите корректное значение влажности.");
                     return;
                 }
@@ -924,105 +872,49 @@
                     }
                 }
 
-                console.log("Soil type calculated", { flowabilityIndex, soilType });
                 soilTypeContainer.querySelector(".flowability-index").textContent = flowabilityIndex;
                 soilTypeContainer.querySelector(".soil-type").textContent = soilType;
+                this.setupEnterNavigation(calcDiv);
             },
 
-            exportToExcel() {
-                if (!window.XLSX) {
-                    console.error("SheetJS library is not loaded");
-                    alert("Ошибка: библиотека для экспорта не загружена.");
-                    return;
-                }
+            setupEnterNavigation(calcDiv) {
+                const upperInputs = Array.from(calcDiv.querySelectorAll(".limit-block[data-limit='upper'] .sample-block:first-child input"));
+                const lowerInputs = Array.from(calcDiv.querySelectorAll(".limit-block[data-limit='lower'] .sample-block:first-child input"));
+                const inputs = [...upperInputs, ...lowerInputs];
+                const calcButton = calcDiv.querySelector(".btn-calc-green");
 
-                try {
-                    const tests = document.querySelectorAll("#tests-container .test-flex");
-                    const data = [];
+                // Удаляем старые обработчики событий
+                inputs.forEach(input => {
+                    input.removeEventListener("keydown", this.handleEnterKey);
+                });
 
-                    tests.forEach(test => {
-                        const mainInfoInputs = test.querySelectorAll(".main-info input");
-                        const labNumber = mainInfoInputs[0].value.trim();
-                        const wellNumber = mainInfoInputs[1].value.trim();
-                        const depth = mainInfoInputs[2].value.trim();
-                        const upperLimit = test.querySelector(".limit-block[data-limit='upper'] .limit-value").textContent.trim();
-                        const lowerLimit = test.querySelector(".limit-block[data-limit='lower'] .limit-value").textContent.trim();
-                        const plasticityNumber = test.querySelector(".plasticity-number-value")?.textContent.trim() || "-";
-                        const soilTypeContainer = test.querySelector(".soil-type-container");
-                        const humidity = soilTypeContainer ? soilTypeContainer.querySelector(".soil-humidity")?.value.trim() || "-" : "-";
-                        const flowabilityIndex = soilTypeContainer ? soilTypeContainer.querySelector(".flowability-index")?.textContent.trim() || "-" : "-";
-                        const soilType = soilTypeContainer ? soilTypeContainer.querySelector(".soil-type")?.textContent.trim() || "-" : "-";
-
-                        if (labNumber && wellNumber && depth && 
-                            (upperLimit !== "-" || lowerLimit !== "-" || plasticityNumber !== "-" || humidity !== "-" || flowabilityIndex !== "-" || soilType !== "-")) {
-                            data.push([labNumber, wellNumber, depth, upperLimit, lowerLimit, plasticityNumber, humidity, flowabilityIndex, soilType]);
+                // Добавляем новые обработчики
+                inputs.forEach((input, index) => {
+                    input.addEventListener("keydown", (event) => {
+                        console.log(`Enter pressed on input ${index + 1}: ${input.className}`);
+                        if (event.key === "Enter") {
+                            event.preventDefault();
+                            if (index < inputs.length - 1) {
+                                console.log(`Focusing next input: ${index + 2}`);
+                                inputs[index + 1].focus();
+                            } else {
+                                const allFilled = inputs.every(input => input.value.trim() !== "");
+                                console.log(`All fields filled: ${allFilled}`);
+                                if (allFilled && calcButton) {
+                                    console.log("Focusing and triggering calculate button");
+                                    calcButton.focus();
+                                    calcButton.click(); // Программно вызываем calculateTest
+                                } else {
+                                    console.log("Not all fields are filled, skipping calculation");
+                                }
+                            }
                         }
                     });
+                });
+            },
 
-                    if (data.length === 0) {
-                        alert("Нет данных для экспорта. Заполните данные и выполните расчёт.");
-                        return;
-                    }
-
-                    const today = new Date();
-                    const dateStr = today.toISOString().split("T")[0];
-                    const ws_data = [
-                        ["Пределы пластичности"],
-                        [`Дата: ${dateStr}`],
-                        [],
-                        ["Лабораторный номер", "Номер скважины", "Глубина отбора", 
-                         "Верхний предел пластичности, д.е.", "Нижний предел пластичности, д.е.", 
-                         "Число пластичности, д.е.", "Влажность, д.е.", "Показатель текучести", "Наименование грунта"],
-                        ...data
-                    ];
-
-                    const ws = XLSX.utils.aoa_to_sheet(ws_data);
-
-                    ws["A1"] = { v: "Пределы пластичности", s: { font: { name: "Arial", sz: 14, bold: true }, alignment: { horizontal: "center" } } };
-                    ws["A2"] = { v: `Дата: ${dateStr}`, s: { font: { name: "Arial", sz: 12 }, alignment: { horizontal: "left" } } };
-                    const headerRange = ["A4", "B4", "C4", "D4", "E4", "F4", "G4", "H4", "I4"];
-                    headerRange.forEach(cell => {
-                        ws[cell] = {
-                            ...ws[cell],
-                            s: {
-                                font: { name: "Arial", sz: 12, bold: true, color: { rgb: "FFFFFF" } },
-                                fill: { fgColor: { rgb: "2c3e50" } },
-                                alignment: { horizontal: "center" }
-                            }
-                        };
-                    });
-
-                    ws['!cols'] = [
-                        { wch: 20 },
-                        { wch: 20 },
-                        { wch: 20 },
-                        { wch: 25 },
-                        { wch: 25 },
-                        { wch: 20 },
-                        { wch: 15 },
-                        { wch: 20 },
-                        { wch: 25 }
-                    ];
-
-                    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }];
-
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, "Пределы пластичности");
-
-                    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-                    const blob = new Blob([wbout], { type: "application/octet-stream" });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `Пределы_Пластичности_${dateStr}.xlsx`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                } catch (error) {
-                    console.error("Export error:", error);
-                    alert("Ошибка при экспорте данных. Проверьте консоль браузера.");
-                }
+            handleEnterKey(event) {
+                // Этот метод теперь не используется, но оставлен для совместимости
             }
         };
 
