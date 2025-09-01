@@ -255,16 +255,16 @@
             border: 1px solid #ccc;
             font-size: 13px;
         }
-        .humidity-group {
+        .volume-group {
             display: flex;
             gap: 8px;
             align-items: center;
         }
-        .humidity-group input {
+        .volume-group input {
             flex: 3;
             width: 70%;
         }
-        .humidity-group select {
+        .volume-group select {
             flex: 1;
             width: 30%;
             min-width: 60px;
@@ -432,15 +432,15 @@
             .sample-row input, .sample-row select {
                 width: 100%;
             }
-            .humidity-group {
+            .volume-group {
                 flex-direction: row;
                 width: 100%;
             }
-            .humidity-group input.soil-humidity {
+            .volume-group input {
                 flex: 3;
                 width: 70%;
             }
-            .humidity-group select.humidity-unit {
+            .volume-group select {
                 flex: 1;
                 width: 30%;
                 min-width: 60px;
@@ -476,8 +476,9 @@
         <a href="granulometr.html">Гранулометрический состав</a>
         <a href="plastichnost.html">Пределы пластичности</a>
         <a href="plotnost.html">Плотность грунта</a>
-        <a href="plotnost_chastic.html">Плотность частиц грунта</a>
         <a href="organic.html">Содержание органических веществ</a>
+        <a href="contacts.html">Контакты</a>
+        <a href="reference.html">Справочник</a>
     </div>
 
     <div class="header-text">
@@ -489,6 +490,7 @@
         <button class="action-btn method-btn initial" id="btn-ring" onclick="App.toggleMethod('ring')" aria-label="Плотность методом режущего кольца">Плотность методом режущего кольца</button>
         <button class="action-btn method-btn initial" id="btn-paraffin" onclick="App.toggleMethod('paraffin')" aria-label="Плотность методом парафинирования">Плотность методом парафинирования</button>
         <button class="action-btn method-btn initial" id="btn-dry" onclick="App.toggleMethod('dry')" aria-label="Плотность сухого грунта">Плотность сухого грунта</button>
+        <button class="action-btn method-btn initial" id="btn-particle" onclick="App.toggleMethod('particle')" aria-label="Плотность частиц грунта">Плотность частиц грунта</button>
     </div>
 
     <div id="test-container-ring" class="test-container">
@@ -509,6 +511,13 @@
         <div class="tests-container" id="tests-container-dry"></div>
         <div style="text-align: center; margin-top: 25px;">
             <button class="action-btn always-active" onclick="App.addTest('dry')" aria-label="Добавить новое испытание">+ Добавить испытание</button>
+        </div>
+    </div>
+
+    <div id="test-container-particle" class="test-container">
+        <div class="tests-container" id="tests-container-particle"></div>
+        <div style="text-align: center; margin-top: 25px;">
+            <button class="action-btn always-active" onclick="App.addTest('particle')" aria-label="Добавить новое испытание">+ Добавить испытание</button>
         </div>
     </div>
 
@@ -541,7 +550,7 @@
                     const sampleBlocks = Array.from(calcDiv.querySelectorAll(".sample-block"));
                     const allInputs = method === 'dry' 
                         ? Array.from(calcDiv.querySelectorAll(".sample-row input")) // Только input для dry
-                        : Array.from(calcDiv.querySelectorAll(".sample-row input, .sample-row select")); // input и select для ring, paraffin
+                        : Array.from(calcDiv.querySelectorAll(".sample-row input, .sample-row select")); // input и select для ring, paraffin, particle
                     const currentIndex = allInputs.indexOf(input);
                     const currentSampleBlock = input.closest(".sample-block");
                     const currentSampleIndex = sampleBlocks.indexOf(currentSampleBlock);
@@ -558,9 +567,9 @@
             },
 
             toggleMethod(method) {
-                const buttons = ['ring', 'paraffin', 'dry'].map(id => document.getElementById(`btn-${id}`));
+                const buttons = ['ring', 'paraffin', 'dry', 'particle'].map(id => document.getElementById(`btn-${id}`));
                 buttons.forEach(btn => btn.classList.remove('initial'));
-                const containers = ['ring', 'paraffin', 'dry'].map(id => document.getElementById(`test-container-${id}`));
+                const containers = ['ring', 'paraffin', 'dry', 'particle'].map(id => document.getElementById(`test-container-${id}`));
                 containers.forEach(container => container.classList.remove('active'));
                 document.getElementById(`test-container-${method}`).classList.add('active');
                 buttons.forEach(btn => btn.classList.remove('active'));
@@ -621,6 +630,28 @@
                                             <option value="decimal">д.е.</option>
                                         </select>
                                     </div>
+                                </div>
+                            </div>
+                            <div class="sample-result">-</div>
+                        </div>
+                    `;
+                } else if (method === 'particle') {
+                    sampleContent = `
+                        <div class="sample-block">
+                            <div class="sample-content">
+                                <div class="sample-row">
+                                    <div class="volume-group">
+                                        <input type="number" class="pycnometer-volume" placeholder="Объем пикнометра" aria-label="Объем пикнометра" onkeypress="App.focusNextInput(event, this)">
+                                        <select class="volume-unit" aria-label="Единица объема">
+                                            <option value="ml">мл</option>
+                                            <option value="cm3">см³</option>
+                                            <option value="l">л</option>
+                                        </select>
+                                    </div>
+                                    <input type="number" class="pycnometer-weight" placeholder="Вес пикнометра, г" aria-label="Вес пикнометра" onkeypress="App.focusNextInput(event, this)">
+                                    <input type="number" class="dry-soil-weight" placeholder="Вес сухого грунта, г" aria-label="Вес сухого грунта" onkeypress="App.focusNextInput(event, this)">
+                                    <input type="number" class="pycnometer-soil-water-weight" placeholder="Вес пикнометра с грунтом и водой после кипячения, г" aria-label="Вес пикнометра с грунтом и водой после кипячения" onkeypress="App.focusNextInput(event, this)">
+                                    <input type="number" class="temperature" placeholder="Температура, °C" aria-label="Температура испытания" min="0" max="100" onkeypress="App.focusNextInput(event, this)">
                                 </div>
                             </div>
                             <div class="sample-result">-</div>
@@ -698,7 +729,28 @@
                                         <option value="decimal">д.е.</option>
                                     </select>
                                 </div>
+                            </div>
                         </div>
+                        <div class="sample-result">-</div>
+                        <button class="btn-delete-sample" onclick="App.deleteSample(this)" aria-label="Удалить образец">—</button>
+                    `;
+                } else if (method === 'particle') {
+                    sampleContent = `
+                        <div class="sample-content">
+                            <div class="sample-row">
+                                <div class="volume-group">
+                                    <input type="number" class="pycnometer-volume" placeholder="Объем пикномetра" aria-label="Объем пикнометра" onkeypress="App.focusNextInput(event, this)">
+                                    <select class="volume-unit" aria-label="Единица объема">
+                                        <option value="ml">мл</option>
+                                        <option value="cm3">см³</option>
+                                        <option value="l">л</option>
+                                    </select>
+                                </div>
+                                <input type="number" class="pycnometer-weight" placeholder="Вес пикнометра, г" aria-label="Вес пикнометра" onkeypress="App.focusNextInput(event, this)">
+                                <input type="number" class="dry-soil-weight" placeholder="Вес сухого грунта, г" aria-label="Вес сухого грунта" onkeypress="App.focusNextInput(event, this)">
+                                <input type="number" class="pycnometer-soil-water-weight" placeholder="Вес пикнометра с грунтом и водой после кипячения, г" aria-label="Вес пикнометра с грунтом и водой после кипячения" onkeypress="App.focusNextInput(event, this)">
+                                <input type="number" class="temperature" placeholder="Температура, °C" aria-label="Температура испытания" min="0" max="100" onkeypress="App.focusNextInput(event, this)">
+                            </div>
                         </div>
                         <div class="sample-result">-</div>
                         <button class="btn-delete-sample" onclick="App.deleteSample(this)" aria-label="Удалить образец">—</button>
@@ -784,6 +836,64 @@
                         } else {
                             density = soilDensity / (1 + humidity);
                         }
+                        sample.querySelector(".sample-result").textContent = `${density.toFixed(3)} г/см³`;
+                        densityValues.push(density);
+                    });
+                } else if (method === 'particle') {
+                    const waterDensityData = [
+                        [0, 0.99987], [2, 0.99997], [4, 1.00000], [6, 0.99997], [8, 0.99988], [10, 0.99973],
+                        [12, 0.99953], [14, 0.99927], [16, 0.99897], [18, 0.99862], [20, 0.99823],
+                        [22, 0.99780], [24, 0.99733], [26, 0.99681], [28, 0.99626], [30, 0.99568],
+                        [32, 0.99506], [34, 0.99440], [36, 0.99372], [38, 0.99300], [40, 0.99225],
+                        [42, 0.99147], [44, 0.99070], [46, 0.98980], [48, 0.98900], [50, 0.98810],
+                        [52, 0.98720], [54, 0.98620], [56, 0.98530], [58, 0.98430], [60, 0.98320],
+                        [62, 0.98220], [64, 0.98110], [66, 0.98010], [68, 0.97890], [70, 0.97780],
+                        [72, 0.97670], [74, 0.97550], [76, 0.97430], [78, 0.97310], [80, 0.97180],
+                        [82, 0.97060], [84, 0.96930], [86, 0.96800], [88, 0.96670], [90, 0.96530],
+                        [92, 0.96400], [94, 0.96260], [96, 0.96120], [98, 0.95980], [100, 0.95840]
+                    ];
+
+                    samples.forEach(sample => {
+                        const volumeInput = parseFloat(sample.querySelector(".pycnometer-volume").value);
+                        const volumeUnit = sample.querySelector(".volume-unit").value;
+                        const pycnometerWeight = parseFloat(sample.querySelector(".pycnometer-weight").value);
+                        const drySoilWeight = parseFloat(sample.querySelector(".dry-soil-weight").value);
+                        const pycnometerSoilWaterWeight = parseFloat(sample.querySelector(".pycnometer-soil-water-weight").value);
+                        const temperature = parseFloat(sample.querySelector(".temperature").value);
+
+                        if (isNaN(volumeInput) || isNaN(pycnometerWeight) || isNaN(drySoilWeight) || isNaN(pycnometerSoilWaterWeight) || isNaN(temperature) ||
+                            volumeInput <= 0 || pycnometerWeight < 0 || drySoilWeight <= 0 || pycnometerSoilWaterWeight <= 0 || temperature < 0 || temperature > 100) {
+                            sample.querySelector(".sample-result").textContent = "Некорректные данные";
+                            return;
+                        }
+
+                        // Конверсия объёма в мл
+                        let volumeMl = volumeInput;
+                        if (volumeUnit === 'cm3') volumeMl = volumeInput;
+                        else if (volumeUnit === 'l') volumeMl = volumeInput * 1000;
+
+                        // Интерполяция плотности воды по температуре
+                        let waterDensity = 1.00000; // Значение по умолчанию (4°C)
+                        for (let i = 0; i < waterDensityData.length - 1; i++) {
+                            if (temperature >= waterDensityData[i][0] && temperature <= waterDensityData[i + 1][0]) {
+                                const t1 = waterDensityData[i][0];
+                                const d1 = waterDensityData[i][1];
+                                const t2 = waterDensityData[i + 1][0];
+                                const d2 = waterDensityData[i + 1][1];
+                                waterDensity = d1 + (d2 - d1) * (temperature - t1) / (t2 - t1);
+                                break;
+                            }
+                        }
+
+                        // Вес пикнометра с водой при заданной температуре
+                        const waterWeight = volumeMl * waterDensity;
+                        const pycnometerWithWaterWeight = pycnometerWeight + waterWeight;
+
+                        // Расчёт плотности частиц грунта
+                        const numerator = waterDensity * drySoilWeight;
+                        const denominator = drySoilWeight + pycnometerWithWaterWeight - pycnometerSoilWaterWeight;
+                        const density = numerator / denominator;
+
                         sample.querySelector(".sample-result").textContent = `${density.toFixed(3)} г/см³`;
                         densityValues.push(density);
                     });

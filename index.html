@@ -33,9 +33,18 @@ body::before {
     z-index: 0;
 }
 
+.logo {
+    max-width: 200px;
+    height: auto;
+    margin-bottom: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 h1 {
     text-align: center;
-    margin-top: 40px;
+    margin-top: 0; /* Убрал верхний отступ, так как логотип задаёт расстояние */
     position: relative;
     z-index: 1;
 }
@@ -120,10 +129,14 @@ p {
         width: 80%;
         max-width: 300px;
     }
+    .logo {
+        max-width: 150px; /* Уменьшаем размер логотипа на мобильных устройствах */
+    }
 }
 </style>
 </head>
 <body>
+<img src="/logo.png" alt="Логотип" class="logo">
 <h1>Геологические расчёты онлайн</h1>
 <p>Добро пожаловать! Здесь вы сможете рассчитать основные параметры грунтов:
     влажность, гранулометрический состав, пределы пластичности, плотность и многое другое.</p>
@@ -133,7 +146,6 @@ p {
     <a href="granulometr.html">Гранулометрический состав</a>
     <a href="plastichnost.html">Пределы пластичности</a>
     <a href="plotnost.html">Плотность грунта</a>
-    <a href="plotnost_chastic.html">Плотность частиц грунта</a>
     <a href="organic.html">Содержание органических веществ</a>
 </div>
 
