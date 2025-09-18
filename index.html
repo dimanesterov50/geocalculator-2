@@ -15,6 +15,7 @@ body {
     position: relative;
     background-color: #ffffff;
     overflow-x: hidden;
+    min-height: 100vh; /* Убедимся, что тело занимает всю высоту экрана */
 }
 
 /* Паттерн */
@@ -68,16 +69,20 @@ p {
 }
 
 .menu-buttons a {
-    display: block;
+    display: flex; /* Используем flex для центрирования */
+    justify-content: center; /* Центрируем по горизонтали */
+    align-items: center; /* Центрируем по вертикали */
     padding: 20px;
     text-decoration: none;
-    text-align: center;
+    text-align: center; /* Дополнительно для совместимости */
     color: white;
     background-color: #2c3e50;
     border: 2px solid #2c3e50;
     border-radius: 12px;
     font-size: 16px;
     transition: background-color 0.3s, color 0.3s, transform 0.2s;
+    height: 100%; /* Убедимся, что высота занимает всё доступное место */
+    box-sizing: border-box; /* Учитываем padding в общей высоте */
 }
 
 .menu-buttons a:hover {
@@ -96,10 +101,12 @@ p {
 }
 
 .extra-buttons a {
-    display: block;
+    display: flex; /* Используем flex для центрирования */
+    justify-content: center; /* Центрируем по горизонтали */
+    align-items: center; /* Центрируем по вертикали */
     padding: 15px 25px;
     text-decoration: none;
-    text-align: center;
+    text-align: center; /* Дополнительно для совместимости */
     color: white;
     background-color: #2e7d32;
     border: 2px solid #2e7d32;
@@ -107,11 +114,23 @@ p {
     font-size: 16px;
     font-weight: bold;
     transition: background-color 0.3s, transform 0.2s;
+    height: 100%; /* Убедимся, что высота занимает всё доступное место */
+    box-sizing: border-box; /* Учитываем padding в общей высоте */
 }
 
 .extra-buttons a:hover {
     background-color: #388e3c;
     transform: scale(1.05);
+}
+
+/* Футер */
+footer {
+    margin-top: auto; /* Прижимает футер к низу, если контент короткий */
+    padding: 10px 0;
+    font-size: 14px;
+    text-align: center;
+    width: 100%;
+    z-index: 1;
 }
 
 /* Адаптив */
@@ -147,6 +166,7 @@ p {
     <a href="plastichnost.html">Пределы пластичности</a>
     <a href="plotnost.html">Плотность грунта</a>
     <a href="organic.html">Содержание органических веществ</a>
+    <a href="scale.html">Скальный грунт</a>
 </div>
 
 <div class="extra-buttons">
@@ -154,7 +174,7 @@ p {
     <a href="contacts.html">Контакты</a>
 </div>
 
-<footer style="position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 10px 0; font-size: 14px; z-index: 100;">
+<footer>
     <div>© 2025 Geocalculator. Геологические расчеты онлайн</div>
     <div>Текущее время: <span id="current-time">--:--:--</span></div>
 </footer>
@@ -162,9 +182,9 @@ p {
 <script>
 function updateClock() {
     const now = new Date();
-    const hours = String(now.getHours()).padStart(2,'0');
-    const minutes = String(now.getMinutes()).padStart(2,'0');
-    const seconds = String(now.getSeconds()).padStart(2,'0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
     document.getElementById("current-time").textContent = `${hours}:${minutes}:${seconds}`;
 }
 
