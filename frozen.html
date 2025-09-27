@@ -148,6 +148,7 @@
     </div>
 
     <div id="test-container-moisture" class="test-container">
+        <p style="text-align: center; font-size: 16px; color: #000000;">После расчёта суммарной влажности (Wtot) вы сможете рассчитать дополнительные параметры: влажность между минеральными прослойками (Wm), влажность льда (Wi), влажность незамерзшей воды (Ww) и влажность порового льда (Wic).</p>
         <div class="tests-container" id="tests-container-moisture"></div>
         <div style="text-align: center; margin-top: 25px;">
             <button class="action-btn always-active" onclick="App.addTest('moisture')" aria-label="Добавить новое испытание">+ Добавить испытание</button>
@@ -170,6 +171,140 @@
 
     <script>
         const App = {
+            // Thermal conductivity data
+            sandThermalData: [
+                { pd: 0.1, W: 9.00, λth: 0.30, λf: 0.40 },
+                { pd: 0.1, W: 6.00, λth: 0.35, λf: 0.45 },
+                { pd: 0.1, W: 4.00, λth: 0.40, λf: 0.50 },
+                { pd: 0.1, W: 2.00, λth: 0.50, λf: 0.60 },
+                { pd: 0.2, W: 4.00, λth: 0.45, λf: 0.55 },
+                { pd: 0.2, W: 2.00, λth: 0.55, λf: 0.65 },
+                { pd: 0.3, W: 3.00, λth: 0.50, λf: 0.60 },
+                { pd: 0.3, W: 2.00, λth: 0.60, λf: 0.70 },
+                { pd: 0.4, W: 2.00, λth: 0.65, λf: 0.75 },
+                { pd: 0.7, W: 1.00, λth: 0.80, λf: 0.90 },
+                { pd: 1.0, W: 0.60, λth: 0.95, λf: 1.05 },
+                { pd: 1.2, W: 0.40, λth: 1.10, λf: 1.20 },
+                { pd: 1.4, W: 0.35, λth: 1.20, λf: 1.30 },
+                { pd: 1.4, W: 0.30, λth: 1.30, λf: 1.40 },
+                { pd: 1.4, W: 0.25, λth: 1.91, λf: 2.14 },
+                { pd: 1.4, W: 0.20, λth: 1.57, λf: 1.86 },
+                { pd: 1.4, W: 0.15, λth: 1.39, λf: 1.62 },
+                { pd: 1.4, W: 0.10, λth: 1.10, λf: 1.27 },
+                { pd: 1.4, W: 0.05, λth: 0.75, λf: 0.81 },
+                { pd: 1.6, W: 0.30, λth: 2.00, λf: 2.20 },
+                { pd: 1.6, W: 0.25, λth: 2.50, λf: 2.73 },
+                { pd: 1.6, W: 0.20, λth: 2.15, λf: 2.37 },
+                { pd: 1.6, W: 0.15, λth: 1.80, λf: 2.00 },
+                { pd: 1.6, W: 0.10, λth: 1.45, λf: 1.62 },
+                { pd: 1.6, W: 0.05, λth: 1.05, λf: 1.10 },
+                { pd: 1.8, W: 0.20, λth: 2.67, λf: 2.84 },
+                { pd: 1.8, W: 0.15, λth: 2.26, λf: 2.62 },
+                { pd: 1.8, W: 0.10, λth: 1.97, λf: 2.20 },
+                { pd: 1.8, W: 0.05, λth: 1.45, λf: 1.51 },
+                { pd: 2.0, W: 0.10, λth: 2.73, λf: 2.90 },
+                { pd: 2.0, W: 0.05, λth: 2.10, λf: 2.14 }
+            ],
+            loamySandThermalData: [
+                { pd: 0.1, W: 9.00, λth: 0.25, λf: 0.35 },
+                { pd: 0.1, W: 6.00, λth: 0.30, λf: 0.40 },
+                { pd: 0.1, W: 4.00, λth: 0.35, λf: 0.45 },
+                { pd: 0.1, W: 2.00, λth: 0.40, λf: 0.50 },
+                { pd: 0.2, W: 4.00, λth: 0.40, λf: 0.50 },
+                { pd: 0.2, W: 2.00, λth: 0.45, λf: 0.55 },
+                { pd: 0.3, W: 3.00, λth: 0.45, λf: 0.55 },
+                { pd: 0.3, W: 2.00, λth: 0.50, λf: 0.60 },
+                { pd: 0.4, W: 2.00, λth: 0.55, λf: 2.10 },
+                { pd: 0.7, W: 1.00, λth: 0.70, λf: 2.10 },
+                { pd: 1.0, W: 0.60, λth: 0.85, λf: 2.00 },
+                { pd: 1.2, W: 0.40, λth: 1.00, λf: 1.90 },
+                { pd: 1.4, W: 0.35, λth: 1.80, λf: 1.86 },
+                { pd: 1.4, W: 0.30, λth: 1.74, λf: 1.80 },
+                { pd: 1.4, W: 0.25, λth: 1.57, λf: 1.68 },
+                { pd: 1.4, W: 0.20, λth: 1.33, λf: 1.51 },
+                { pd: 1.4, W: 0.15, λth: 1.10, λf: 1.27 },
+                { pd: 1.4, W: 0.10, λth: 0.93, λf: 1.05 },
+                { pd: 1.4, W: 0.05, λth: 0.64, λf: 0.70 },
+                { pd: 1.6, W: 0.30, λth: 1.86, λf: 1.97 },
+                { pd: 1.6, W: 0.25, λth: 1.80, λf: 1.91 },
+                { pd: 1.6, W: 0.20, λth: 1.62, λf: 1.74 },
+                { pd: 1.6, W: 0.15, λth: 1.45, λf: 1.57 },
+                { pd: 1.6, W: 0.10, λth: 1.28, λf: 1.28 },
+                { pd: 1.6, W: 0.05, λth: 0.81, λf: 0.87 },
+                { pd: 1.8, W: 0.20, λth: 1.86, λf: 1.97 },
+                { pd: 1.8, W: 0.15, λth: 1.68, λf: 1.80 },
+                { pd: 1.8, W: 0.10, λth: 1.45, λf: 1.57 },
+                { pd: 1.8, W: 0.05, λth: 0.99, λf: 0.99 },
+                { pd: 2.0, W: 0.10, λth: 1.74, λf: 1.86 },
+                { pd: 2.0, W: 0.05, λth: 1.00, λf: 1.10 }
+            ],
+            loamClayThermalData: [
+                { pd: 0.1, W: 9.00, λth: 0.20, λf: 0.30 },
+                { pd: 0.1, W: 6.00, λth: 0.25, λf: 0.35 },
+                { pd: 0.1, W: 4.00, λth: 0.30, λf: 0.40 },
+                { pd: 0.1, W: 2.00, λth: 0.35, λf: 0.45 },
+                { pd: 0.2, W: 4.00, λth: 0.35, λf: 0.45 },
+                { pd: 0.2, W: 2.00, λth: 0.40, λf: 0.50 },
+                { pd: 0.3, W: 3.00, λth: 0.40, λf: 0.50 },
+                { pd: 0.3, W: 2.00, λth: 0.45, λf: 0.55 },
+                { pd: 0.4, W: 2.00, λth: 0.50, λf: 2.10 },
+                { pd: 0.7, W: 1.00, λth: 0.65, λf: 2.10 },
+                { pd: 1.0, W: 0.60, λth: 0.80, λf: 1.90 },
+                { pd: 1.2, W: 0.40, λth: 1.57, λf: 1.80 },
+                { pd: 1.4, W: 0.35, λth: 1.57, λf: 1.66 },
+                { pd: 1.4, W: 0.30, λth: 1.45, λf: 1.57 },
+                { pd: 1.4, W: 0.25, λth: 1.33, λf: 1.51 },
+                { pd: 1.4, W: 0.20, λth: 1.10, λf: 1.22 },
+                { pd: 1.4, W: 0.15, λth: 0.87, λf: 0.99 },
+                { pd: 1.4, W: 0.10, λth: 0.70, λf: 0.75 },
+                { pd: 1.4, W: 0.05, λth: 0.46, λf: 0.52 },
+                { pd: 1.6, W: 0.30, λth: 1.68, λf: 1.86 },
+                { pd: 1.6, W: 0.25, λth: 1.51, λf: 1.68 },
+                { pd: 1.6, W: 0.20, λth: 1.33, λf: 1.51 },
+                { pd: 1.6, W: 0.15, λth: 1.10, λf: 1.22 },
+                { pd: 1.6, W: 0.10, λth: 0.87, λf: 0.93 },
+                { pd: 1.6, W: 0.05, λth: 0.58, λf: 0.64 },
+                { pd: 1.8, W: 0.20, λth: 1.57, λf: 1.80 },
+                { pd: 1.8, W: 0.15, λth: 1.39, λf: 1.57 },
+                { pd: 1.8, W: 0.10, λth: 1.05, λf: 1.22 },
+                { pd: 1.8, W: 0.05, λth: 0.70, λf: 0.75 },
+                { pd: 2.0, W: 0.10, λth: 1.28, λf: 1.39 },
+                { pd: 2.0, W: 0.05, λth: 0.80, λf: 0.85 }
+            ],
+            heatCapacityData: [
+                { pd: 0.1, W: 9.00, Cth: 4.00, Cf: 2.31 },
+                { pd: 0.1, W: 6.00, Cth: 2.73, Cf: 1.65 },
+                { pd: 0.1, W: 4.00, Cth: 1.88, Cf: 1.26 },
+                { pd: 0.1, W: 2.00, Cth: 1.05, Cf: 0.64 },
+                { pd: 0.2, W: 4.00, Cth: 3.78, Cf: 2.40 },
+                { pd: 0.2, W: 2.00, Cth: 2.10, Cf: 1.47 },
+                { pd: 0.3, W: 3.00, Cth: 4.15, Cf: 2.40 },
+                { pd: 0.3, W: 2.00, Cth: 3.32, Cf: 2.10 },
+                { pd: 0.4, W: 2.00, Cth: 3.78, Cf: 2.73 },
+                { pd: 0.7, W: 1.00, Cth: 3.60, Cf: 2.10 },
+                { pd: 1.0, W: 0.60, Cth: 3.44, Cf: 2.18 },
+                { pd: 1.2, W: 0.40, Cth: 3.11, Cf: 2.12 },
+                { pd: 1.4, W: 0.35, Cth: 3.35, Cf: 2.35 },
+                { pd: 1.4, W: 0.30, Cth: 3.02, Cf: 2.18 },
+                { pd: 1.4, W: 0.25, Cth: 2.78, Cf: 2.06 },
+                { pd: 1.4, W: 0.20, Cth: 2.48, Cf: 1.89 },
+                { pd: 1.4, W: 0.15, Cth: 2.18, Cf: 1.76 },
+                { pd: 1.4, W: 0.10, Cth: 1.89, Cf: 1.74 },
+                { pd: 1.4, W: 0.05, Cth: 1.60, Cf: 1.47 },
+                { pd: 1.6, W: 0.30, Cth: 1.84, Cf: 2.48 },
+                { pd: 1.6, W: 0.25, Cth: 3.15, Cf: 2.35 },
+                { pd: 1.6, W: 0.20, Cth: 2.31, Cf: 2.14 },
+                { pd: 1.6, W: 0.15, Cth: 2.48, Cf: 2.02 },
+                { pd: 1.6, W: 0.10, Cth: 2.16, Cf: 1.80 },
+                { pd: 1.6, W: 0.05, Cth: 1.83, Cf: 1.68 },
+                { pd: 1.8, W: 0.20, Cth: 3.17, Cf: 2.41 },
+                { pd: 1.8, W: 0.15, Cth: 2.78, Cf: 2.26 },
+                { pd: 1.8, W: 0.10, Cth: 2.42, Cf: 2.04 },
+                { pd: 1.8, W: 0.05, Cth: 2.04, Cf: 1.89 },
+                { pd: 2.0, W: 0.10, Cth: 2.68, Cf: 2.26 },
+                { pd: 2.0, W: 0.05, Cth: 2.26, Cf: 2.10 }
+            ],
+
             init() {
                 document.addEventListener('DOMContentLoaded', () => {
                     console.log('Frozen soil page loaded');
@@ -325,7 +460,64 @@
                         </div>
                     `;
                 } else if (method === 'thermophysics') {
-                    sampleContent = `<p>Раздел "Теплофизика" находится в разработке. Данные будут добавлены позже.</p>`;
+                    sampleContent = `
+                        <div class="sample-block">
+                            <div class="sample-content">
+                                <div class="sample-row">
+                                    <input type="number" class="pd" placeholder="Плотность сухого грунта (pd), г/см³" aria-label="Плотность сухого грунта" onkeypress="App.focusNextInput(event, this)">
+                                    <input type="number" class="W" placeholder="Влажность грунта (W), д.е." aria-label="Влажность грунта" onkeypress="App.focusNextInput(event, this)">
+                                    <select class="soil-type" aria-label="Тип грунта">
+                                        <option value="sand">Песок</option>
+                                        <option value="loamy_sand">Супесь</option>
+                                        <option value="loam">Суглинок</option>
+                                        <option value="clay">Глина</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="sample-result" id="result-thermophysics">-</div>
+                            <button class="btn-delete-sample" onclick="App.deleteSample(this)" aria-label="Удалить образец">—</button>
+                        </div>
+                        <div class="average-container">
+                            <div class="average-row">
+                                <span class="average-label">Теплопроводность талая (λth):</span>
+                                <div class="result-average"><span id="lth-value">-</span> Вт/(м·°С)</div>
+                            </div>
+                            <div class="average-row">
+                                <span class="average-label">Теплопроводность мерзлая (λf):</span>
+                                <div class="result-average"><span id="lf-value">-</span> Вт/(м·°С)</div>
+                            </div>
+                            <div class="average-row">
+                                <span class="average-label">Удельная теплоемкость талая (Cmth):</span>
+                                <div class="result-average"><span id="cmth-value">-</span> ×10⁻⁶ Дж/(кг·°С)</div>
+                            </div>
+                            <div class="average-row">
+                                <span class="average-label">Удельная теплоемкость мерзлая (Cmf):</span>
+                                <div class="result-average"><span id="cmf-value">-</span> ×10⁻⁶ Дж/(кг·°С)</div>
+                            </div>
+                            <div class="average-row">
+                                <span class="average-label">Объемная теплоемкость талая (Cth):</span>
+                                <div class="result-average"><span id="cth-value">-</span> ×10⁻⁶ Дж/(кг·°С)</div>
+                            </div>
+                            <div class="average-row">
+                                <span class="average-label">Объемная теплоемкость мерзлая (Cf):</span>
+                                <div class="result-average"><span id="cf-value">-</span> ×10⁻⁶ Дж/(кг·°С)</div>
+                            </div>
+                            <div class="average-row">
+                                <span class="average-label">Температуропроводность талая (ath):</span>
+                                <div class="result-average"><span id="ath-value">-</span> ×10⁻⁶ м²/с</div>
+                            </div>
+                            <div class="average-row">
+                                <span class="average-label">Температуропроводность мерзлая (af):</span>
+                                <div class="result-average"><span id="af-value">-</span> ×10⁻⁶ м²/с</div>
+                            </div>
+                        </div>
+                        <div class="action-row">
+                            <div>
+                                <button class="btn-calc-green" onclick="App.calculateTest(this, 'thermophysics')" aria-label="Рассчитать">Рассчитать</button>
+                                <button class="btn-clear" onclick="App.clearTest(this)" aria-label="Очистить поля">Очистить</button>
+                                                            </div>
+                        </div>
+                    `;
                 }
 
                 calcDiv.innerHTML = sampleContent;
@@ -345,6 +537,45 @@
             toggleConsistency(select) {
                 const consistencySelect = select.parentElement.querySelector(".consistency");
                 consistencySelect.disabled = select.value === "sand";
+            },
+
+            findThermalProperties(pd, W, soilType) {
+                let data;
+                if (soilType === "sand") {
+                    data = this.sandThermalData;
+                } else if (soilType === "loamy_sand") {
+                    data = this.loamySandThermalData;
+                } else {
+                    data = this.loamClayThermalData;
+                }
+
+                const match = data.find(entry => Math.abs(entry.pd - pd) < 0.01 && Math.abs(entry.W - W) < 0.01);
+                if (match) {
+                    return { λth: match.λth, λf: match.λf };
+                }
+
+                // Fallback to closest match or extrapolation (using nearest point)
+                const closest = data.reduce((prev, curr) => {
+                    const prevDist = Math.sqrt((prev.pd - pd) ** 2 + (prev.W - W) ** 2);
+                    const currDist = Math.sqrt((curr.pd - pd) ** 2 + (curr.W - W) ** 2);
+                    return currDist < prevDist ? curr : prev;
+                });
+                return { λth: closest.λth, λf: closest.λf };
+            },
+
+            findHeatCapacity(pd, W) {
+                const match = this.heatCapacityData.find(entry => Math.abs(entry.pd - pd) < 0.01 && Math.abs(entry.W - W) < 0.01);
+                if (match) {
+                    return { Cth: match.Cth, Cf: match.Cf };
+                }
+
+                // Fallback to closest match
+                const closest = this.heatCapacityData.reduce((prev, curr) => {
+                    const prevDist = Math.sqrt((prev.pd - pd) ** 2 + (prev.W - W) ** 2);
+                    const currDist = Math.sqrt((curr.pd - pd) ** 2 + (curr.W - W) ** 2);
+                    return currDist < prevDist ? curr : prev;
+                });
+                return { Cth: closest.Cth, Cf: closest.Cf };
             },
 
             calculateTest(btn, method) {
@@ -395,20 +626,83 @@
                     document.getElementById("iic-value").textContent = iic;
                     document.getElementById("sr-value").textContent = sr;
                     sample.querySelector("#result-ice").textContent = "Расчёт выполнен";
+                } else if (method === 'thermophysics') {
+                    const samples = block.querySelectorAll(".sample-block");
+                    let totalLth = 0, totalLf = 0, totalCmth = 0, totalCmf = 0, totalCth = 0, totalCf = 0, totalAth = 0, totalAf = 0;
+                    let validSamples = 0;
+
+                    samples.forEach(sample => {
+                        const pd = parseFloat(sample.querySelector(".pd").value);
+                        const W = parseFloat(sample.querySelector(".W").value);
+                        const soilType = sample.querySelector(".soil-type").value;
+
+                        if (isNaN(pd) || isNaN(W) || pd <= 0 || W < 0) {
+                            sample.querySelector("#result-thermophysics").textContent = "Некорректные данные";
+                            return;
+                        }
+
+                        const thermal = this.findThermalProperties(pd, W, soilType);
+                        const heat = this.findHeatCapacity(pd, W);
+
+                        const λth = thermal.λth;
+                        const λf = thermal.λf;
+                        const Cth = heat.Cth;
+                        const Cf = heat.Cf;
+
+                        const Cmth = Math.round(Cth * 1000 / pd);
+                        const Cmf = Math.round(Cf * 1000 / pd);
+                        const ath = (λth / Cmth * 1000).toFixed(3);
+                        const af = (λf / Cmf * 1000).toFixed(3);
+
+                        totalLth += λth;
+                        totalLf += λf;
+                        totalCmth += Cmth;
+                        totalCmf += Cmf;
+                        totalCth += Cth;
+                        totalCf += Cf;
+                        totalAth += parseFloat(ath);
+                        totalAf += parseFloat(af);
+                        validSamples++;
+
+                        sample.querySelector("#result-thermophysics").textContent = "Рассчитано";
+                    });
+
+                    if (validSamples === 0) {
+                        block.querySelector("#lth-value").textContent = "-";
+                        block.querySelector("#lf-value").textContent = "-";
+                        block.querySelector("#cmth-value").textContent = "-";
+                        block.querySelector("#cmf-value").textContent = "-";
+                        block.querySelector("#cth-value").textContent = "-";
+                        block.querySelector("#cf-value").textContent = "-";
+                        block.querySelector("#ath-value").textContent = "-";
+                        block.querySelector("#af-value").textContent = "-";
+                        return;
+                    }
+
+                    block.querySelector("#lth-value").textContent = (totalLth / validSamples).toFixed(2);
+                    block.querySelector("#lf-value").textContent = (totalLf / validSamples).toFixed(2);
+                    block.querySelector("#cmth-value").textContent = (totalCmth / validSamples).toFixed(0);
+                    block.querySelector("#cmf-value").textContent = (totalCmf / validSamples).toFixed(0);
+                    block.querySelector("#cth-value").textContent = (totalCth / validSamples).toFixed(2);
+                    block.querySelector("#cf-value").textContent = (totalCf / validSamples).toFixed(2);
+                    block.querySelector("#ath-value").textContent = (totalAth / validSamples).toFixed(3);
+                    block.querySelector("#af-value").textContent = (totalAf / validSamples).toFixed(3);
                 }
             },
 
             clearTest(btn) {
                 const calcDiv = btn.closest(".calculation-container");
                 calcDiv.querySelectorAll(".sample-block input, .sample-block select").forEach(input => input.value = "");
-                calcDiv.querySelectorAll(".sample-result, .density-value, #wm-value, #wi-value, #ww-value, #wic-value, #itot-value, #ii-value, #iic-value, #sr-value").forEach(el => el.textContent = "-");
-                document.getElementById("btn-continue-moisture").style.display = "none";
-                document.getElementById("manual-wtot-row").style.display = "none";
-                document.getElementById("extra-result-moisture").style.display = "none";
-                document.getElementById("wtot-container").style.display = "block";
-                document.getElementById("initial-moisture-block").style.display = "block";
-                document.getElementById("manual-toggle-moisture").style.display = "inline-block";
-                document.getElementById("calc-extra-moisture").style.display = "none";
+                calcDiv.querySelectorAll(".sample-result, .density-value, #wm-value, #wi-value, #ww-value, #wic-value, #itot-value, #ii-value, #iic-value, #sr-value, #lth-value, #lf-value, #cmth-value, #cmf-value, #cth-value, #cf-value, #ath-value, #af-value").forEach(el => el.textContent = "-");
+                if (calcDiv.querySelector("#btn-continue-moisture")) {
+                    calcDiv.querySelector("#btn-continue-moisture").style.display = "none";
+                    calcDiv.querySelector("#manual-wtot-row").style.display = "none";
+                    calcDiv.querySelector("#extra-result-moisture").style.display = "none";
+                    calcDiv.querySelector("#wtot-container").style.display = "block";
+                    calcDiv.querySelector("#initial-moisture-block").style.display = "block";
+                    calcDiv.querySelector("#manual-toggle-moisture").style.display = "inline-block";
+                    calcDiv.querySelector("#calc-extra-moisture").style.display = "none";
+                }
             },
 
             continueCalculation(method, step) {
@@ -433,9 +727,9 @@
 
                 document.getElementById("wtot-value").textContent = manualWtot.toFixed(3);
                 calcDiv.querySelector("#result-moisture").textContent = "Wtot принята вручную";
-                document.getElementById("btn-continue-moisture").style.display = "none"; // Скрываем "Продолжить"
-                document.getElementById("extra-result-moisture").style.display = "block"; // Открываем поля для доп. параметров
-                document.getElementById("calc-extra-moisture").style.display = "inline-block"; // Показываем кнопку расчёта
+                document.getElementById("btn-continue-moisture").style.display = "none";
+                document.getElementById("extra-result-moisture").style.display = "block";
+                document.getElementById("calc-extra-moisture").style.display = "inline-block";
             },
 
             toggleManualInput(method) {
@@ -452,7 +746,7 @@
                 actionRow.querySelector(".btn-clear").style.display = "none";
                 toggleBtn.style.display = "none";
                 manualRow.style.display = "block";
-                document.getElementById("btn-continue-moisture").style.display = "none"; // Скрываем "Продолжить"
+                document.getElementById("btn-continue-moisture").style.display = "none";
                 document.getElementById("wtot-value").textContent = "-";
                 document.getElementById("result-moisture").textContent = "-";
             },
@@ -467,27 +761,57 @@
 
                     if (isNaN(wp) || wp < 0 || isNaN(wtot) || wtot < 0) {
                         calcDiv.querySelector("#result-moisture").textContent = "Некорректные данные для расчёта";
+                        document.getElementById("wm-value").textContent = "-";
+                        document.getElementById("wi-value").textContent = "-";
+                        document.getElementById("ww-value").textContent = "-";
+                        document.getElementById("wic-value").textContent = "-";
                         return;
                     }
 
-                    // Расчёт Ww
                     const kw = { sand: 0, loamy_sand: 0.4, light_loam: 0.6, heavy_loam: 0.65, clay: 0.9 };
                     const ww = (kw[soilType] * wp).toFixed(3);
 
-                    // Расчёт Wm
                     let wm;
                     if (soilType === "sand" || consistency === "hard" || consistency === "semi_hard") {
-                        wm = ((wtot * 100) - 0.01) / 100;
+                        wm = wtot - 0.01;
                     } else if (consistency === "tough_plastic" || consistency === "soft_plastic") {
                         wm = wp;
                     } else if (consistency === "flowing_plastic" || consistency === "flowing") {
-                        wm = wp - (Math.floor(Math.random() * 3) + 1);
+                        const randomSubtraction = 0.01 + Math.random() * (0.03 - 0.01);
+                        wm = wp - randomSubtraction;
                     }
                     wm = parseFloat(wm.toFixed(3));
 
-                    // Расчёт Wi и Wic
+                    if (wm < 0) {
+                        calcDiv.querySelector("#result-moisture").textContent = "Wm не может быть отрицательным";
+                        document.getElementById("wm-value").textContent = "-";
+                        document.getElementById("wi-value").textContent = "-";
+                        document.getElementById("ww-value").textContent = "-";
+                        document.getElementById("wic-value").textContent = "-";
+                        return;
+                    }
+
                     const wi = (wtot - wm).toFixed(3);
+
+                    if (wi < 0) {
+                        calcDiv.querySelector("#result-moisture").textContent = "Wi не может быть отрицательным";
+                        document.getElementById("wm-value").textContent = "-";
+                        document.getElementById("wi-value").textContent = "-";
+                        document.getElementById("ww-value").textContent = "-";
+                        document.getElementById("wic-value").textContent = "-";
+                        return;
+                    }
+
                     const wic = (wm - parseFloat(ww)).toFixed(3);
+
+                    if (wic < 0) {
+                        calcDiv.querySelector("#result-moisture").textContent = "Wic не может быть отрицательным";
+                        document.getElementById("wm-value").textContent = "-";
+                        document.getElementById("wi-value").textContent = "-";
+                        document.getElementById("ww-value").textContent = "-";
+                        document.getElementById("wic-value").textContent = "-";
+                        return;
+                    }
 
                     document.getElementById("wm-value").textContent = wm;
                     document.getElementById("wi-value").textContent = wi;
@@ -531,6 +855,23 @@
                             </div>
                         </div>
                         <div class="sample-result" id="result-ice">-</div>
+                        <button class="btn-delete-sample" onclick="App.deleteSample(this)" aria-label="Удалить образец">—</button>
+                    `;
+                } else if (method === 'thermophysics') {
+                    sampleContent = `
+                        <div class="sample-content">
+                            <div class="sample-row">
+                                <input type="number" class="pd" placeholder="Плотность сухого грунта (pd), г/см³" aria-label="Плотность сухого грунта" onkeypress="App.focusNextInput(event, this)">
+                                <input type="number" class="W" placeholder="Влажность грунта (W), д.е." aria-label="Влажность грунта" onkeypress="App.focusNextInput(event, this)">
+                                <select class="soil-type" aria-label="Тип грунта">
+                                    <option value="sand">Песок</option>
+                                    <option value="loamy_sand">Супесь</option>
+                                    <option value="loam">Суглинок</option>
+                                    <option value="clay">Глина</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="sample-result" id="result-thermophysics">-</div>
                         <button class="btn-delete-sample" onclick="App.deleteSample(this)" aria-label="Удалить образец">—</button>
                     `;
                 }
