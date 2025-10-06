@@ -15,10 +15,9 @@ body {
     position: relative;
     background-color: #ffffff;
     overflow-x: hidden;
-    min-height: 100vh; /* Убедимся, что тело занимает всю высоту экрана */
+    min-height: 100vh;
 }
 
-/* Паттерн */
 body::before {
     content: "";
     position: fixed;
@@ -45,7 +44,7 @@ body::before {
 
 h1 {
     text-align: center;
-    margin-top: 0; /* Убрал верхний отступ, так как логотип задаёт расстояние */
+    margin-top: 0;
     position: relative;
     z-index: 1;
 }
@@ -60,7 +59,7 @@ p {
 
 .menu-buttons {
     display: grid;
-    grid-template-columns: repeat(3, 200px);
+    grid-template-columns: repeat(3, 220px);
     gap: 20px;
     justify-content: center;
     margin-top: 40px;
@@ -69,20 +68,20 @@ p {
 }
 
 .menu-buttons a {
-    display: flex; /* Используем flex для центрирования */
-    justify-content: center; /* Центрируем по горизонтали */
-    align-items: center; /* Центрируем по вертикали */
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 20px;
     text-decoration: none;
-    text-align: center; /* Дополнительно для совместимости */
+    text-align: center;
     color: white;
     background-color: #2c3e50;
     border: 2px solid #2c3e50;
     border-radius: 12px;
-    font-size: 16px;
+    font-size: 18px;
     transition: background-color 0.3s, color 0.3s, transform 0.2s;
-    height: 100%; /* Убедимся, что высота занимает всё доступное место */
-    box-sizing: border-box; /* Учитываем padding в общей высоте */
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .menu-buttons a:hover {
@@ -101,12 +100,12 @@ p {
 }
 
 .extra-buttons a {
-    display: flex; /* Используем flex для центрирования */
-    justify-content: center; /* Центрируем по горизонтали */
-    align-items: center; /* Центрируем по вертикали */
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 15px 25px;
     text-decoration: none;
-    text-align: center; /* Дополнительно для совместимости */
+    text-align: center;
     color: white;
     background-color: #2e7d32;
     border: 2px solid #2e7d32;
@@ -114,8 +113,8 @@ p {
     font-size: 16px;
     font-weight: bold;
     transition: background-color 0.3s, transform 0.2s;
-    height: 100%; /* Убедимся, что высота занимает всё доступное место */
-    box-sizing: border-box; /* Учитываем padding в общей высоте */
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .extra-buttons a:hover {
@@ -123,9 +122,8 @@ p {
     transform: scale(1.05);
 }
 
-/* Футер */
 footer {
-    margin-top: auto; /* Прижимает футер к низу, если контент короткий */
+    margin-top: auto;
     padding: 10px 0;
     font-size: 14px;
     text-align: center;
@@ -133,7 +131,6 @@ footer {
     z-index: 1;
 }
 
-/* Адаптив */
 @media screen and (max-width: 768px) {
     .menu-buttons {
         grid-template-columns: 1fr;
@@ -149,7 +146,7 @@ footer {
         max-width: 300px;
     }
     .logo {
-        max-width: 150px; /* Уменьшаем размер логотипа на мобильных устройствах */
+        max-width: 150px;
     }
 }
 </style>
@@ -161,11 +158,7 @@ footer {
     влажность, гранулометрический состав, пределы пластичности, плотность и многое другое.</p>
 
 <div class="menu-buttons">
-    <a href="vlazhnost.html">Влажность грунта</a>
-    <a href="granulometr.html">Гранулометрический состав</a>
-    <a href="plastichnost.html">Пределы пластичности</a>
-    <a href="plotnost.html">Плотность грунта</a>
-    <a href="organic.html">Содержание органических веществ</a>
+    <a href="dispersed/dispersed.html">Дисперсный грунт</a>
     <a href="scale.html">Скальный грунт</a>
     <a href="frozen.html">Мерзлый грунт</a>
 </div>
@@ -189,9 +182,8 @@ function updateClock() {
     document.getElementById("current-time").textContent = `${hours}:${minutes}:${seconds}`;
 }
 
-// Обновляем каждую секунду
 setInterval(updateClock, 1000);
-updateClock(); // сразу показать текущее время
+updateClock();
 </script>
 </body>
 </html>
