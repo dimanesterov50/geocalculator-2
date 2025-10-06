@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Контакты</title>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <style>
 body {
     margin: 0;
@@ -98,6 +99,11 @@ body::before {
     resize: vertical;
 }
 
+.feedback-form .g-recaptcha {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
 .feedback-form button {
     width: 100%;
     padding: 12px;
@@ -111,7 +117,12 @@ body::before {
     transition: background-color 0.3s;
 }
 
-.feedback-form button:hover {
+.feedback-form button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.feedback-form button:not(:disabled):hover {
     background-color: #34495e;
 }
 
@@ -173,11 +184,11 @@ body::before {
     <div class="feedback-form">
         <h2>Форма обратной связи</h2>
         <p>Оставьте ваше сообщение, и мы обязательно ответим!</p>
-        <form action="https://formsubmit.co/geocalculator@mail.ru" method="POST">
+        <form action="https://formsubmit.co/geocalculator@mail.ru" method="POST" id="contact-form">
             <input type="hidden" name="_subject" value="Новое сообщение с сайта Geocalculator">
             <input type="hidden" name="_next" value="thanks.html?status=success">
             <input type="hidden" name="_error" value="thanks.html?status=error">
-            <!-- <input type="hidden" name="_captcha" value="false"> -->
+            <input type="hidden" name="_captcha" value="false">
             
             <label for="name">Имя:</label>
             <input type="text" id="name" name="name" required placeholder="Введите ваше имя">
@@ -188,7 +199,9 @@ body::before {
             <label for="message">Сообщение:</label>
             <textarea id="message" name="message" required placeholder="Введите ваше сообщение"></textarea>
             
-            <button type="submit">Отправить сообщение</button>
+            <div class="g-recaptcha" data-sitekey="6LdmhOArAAAAAPKfVrQKb2gK485gry3lJYPFgcQL" data-callback="onRecaptchaSuccess"></div>
+            
+            <button type="submit" id="submit-button" disabled>Отправить сообщение</button>
         </form>
     </div>
 
@@ -200,6 +213,11 @@ body::before {
             navigate(url) {
                 location.href = url;
             }
+        };
+
+        // Функция обратного вызова для успешной проверки reCAPTCHA
+        window.onRecaptchaSuccess = function() {
+            document.getElementById('submit-button').disabled = false;
         };
     </script>
 </body>
