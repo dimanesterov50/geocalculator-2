@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Контакты</title>
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script src="https://www.google.com/recaptcha/api.js?render=explicit&onload=onRecaptchaLoad" async defer></script>
 <style>
 body {
     margin: 0;
@@ -99,7 +99,7 @@ body::before {
     resize: vertical;
 }
 
-.feedback-form .g-recaptcha {
+.feedback-form #recaptcha-container {
     margin-bottom: 15px;
     text-align: center;
 }
@@ -186,9 +186,11 @@ body::before {
         <p>Оставьте ваше сообщение, и мы обязательно ответим!</p>
         <form action="https://formsubmit.co/geocalculator@mail.ru" method="POST" id="contact-form">
             <input type="hidden" name="_subject" value="Новое сообщение с сайта Geocalculator">
-            <input type="hidden" name="_next" value="thanks.html?status=success">
-            <input type="hidden" name="_error" value="thanks.html?status=error">
+            <input type="hidden" name="_next" value="https://geocalculator.ru/thanks.html?status=success">
+            <input type="hidden" name="_error" value="https://geocalculator.ru/thanks.html?status=error">
             <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="_blacklist" value="спам,бот,реклама,viagra,http">
+            <input type="hidden" name="_honeypot" value="">
             
             <label for="name">Имя:</label>
             <input type="text" id="name" name="name" required placeholder="Введите ваше имя">
@@ -199,7 +201,7 @@ body::before {
             <label for="message">Сообщение:</label>
             <textarea id="message" name="message" required placeholder="Введите ваше сообщение"></textarea>
             
-            <div class="g-recaptcha" data-sitekey="6LdmhOArAAAAAPKfVrQKb2gK485gry3lJYPFgcQL" data-callback="onRecaptchaSuccess"></div>
+            <div id="recaptcha-container"></div>
             
             <button type="submit" id="submit-button" disabled>Отправить сообщение</button>
         </form>
@@ -215,10 +217,26 @@ body::before {
             }
         };
 
-        // Функция обратного вызова для успешной проверки reCAPTCHA
-        window.onRecaptchaSuccess = function() {
+        // Функция загрузки reCAPTCHA
+        function onRecaptchaLoad() {
+            console.log('reCAPTCHA loaded successfully');
+            const container = document.getElementById('recaptcha-container');
+            if (container) {
+                grecaptcha.render(container, {
+                    'sitekey': '6LdmhOArAAAAAPKfVrQKb2gK485gry3lJYPFgcQL',
+                    'callback': onRecaptchaSuccess
+                });
+                console.log('reCAPTCHA rendered');
+            } else {
+                console.error('reCAPTCHA container not found');
+            }
+        }
+
+        // Успешная проверка
+        function onRecaptchaSuccess(token) {
+            console.log('reCAPTCHA success, token:', token);
             document.getElementById('submit-button').disabled = false;
-        };
+        }
     </script>
 </body>
 </html>
