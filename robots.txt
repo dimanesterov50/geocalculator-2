@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://geocalculator.ru/sitemap.xml
