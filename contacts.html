@@ -184,9 +184,10 @@ body::before {
     <div class="feedback-form">
         <h2>Форма обратной связи</h2>
         <p>Оставьте ваше сообщение, и мы обязательно ответим!</p>
-        <form action="https://formsubmit.co/geocalculator@mail.ru" method="POST" id="contact-form">
-            <input type="hidden" name="_subject" value="Новое сообщение с сайта Geocalculator">
-            <input type="hidden" name="_captcha" value="false">
+        <form action="https://api.web3forms.com/submit" method="POST" id="contact-form">
+            <input type="hidden" name="access_key" value="1ff8f9cc-fd6d-471b-bd6a-edf3b676afd4">
+            <input type="hidden" name="subject" value="Новое сообщение с сайта Геологические расчёты">
+            <input type="hidden" name="redirect" value="https://geocalculator.ru/thanks.html?status=success">
             <input type="hidden" name="_blacklist" value="спам,бот,реклама,http,casino,click">
             <input type="hidden" name="_honeypot" value="">
             
@@ -199,7 +200,7 @@ body::before {
             <label for="message">Сообщение:</label>
             <textarea id="message" name="message" required placeholder="Введите ваше сообщение"></textarea>
             
-            <div id="recaptcha-container"></div>
+            <div id="recaptcha-container" data-sitekey="6LdmhOArAAAAAPKfVrQKb2gK485gry3lJYPFgcQL" data-callback="onRecaptchaSuccess"></div>
             
             <button type="submit" id="submit-button" disabled>Отправить сообщение</button>
         </form>
@@ -243,7 +244,7 @@ body::before {
             const formData = new FormData(form);
 
             try {
-                console.log('Sending form to FormSubmit');
+                console.log('Sending form to Web3Forms');
                 const response = await fetch(form.action, {
                     method: 'POST',
                     body: formData,
@@ -253,7 +254,7 @@ body::before {
                     redirect: 'manual' // Игнорируем HTTP-редиректы
                 });
 
-                console.log('FormSubmit response:', response.status, response);
+                console.log('Web3Forms response:', response.status, response);
                 if (response.ok || response.type === 'opaqueredirect') {
                     console.log('Redirecting to success page');
                     window.location.href = 'https://geocalculator.ru/thanks.html?status=success';
