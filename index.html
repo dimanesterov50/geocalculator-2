@@ -14,7 +14,6 @@ body {
     padding: 20px;
     background-color: #ffffff;
     min-height: 100vh;
-    height: 100%;
     box-sizing: border-box;
     overflow-x: hidden;
     overflow-y: auto;
@@ -126,25 +125,26 @@ p {
 }
 
 footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
+    margin-top: auto;
     width: 100%;
     padding: 10px 0;
-    font-size: 14px;
+    font-size: 12px;
     text-align: center;
     background-color: #ffffff;
     z-index: 1;
     box-sizing: border-box;
+    opacity: 0.7;
 }
 
 .ad-container {
-    margin-top: 20px;
+    position: fixed;
+    bottom: 60px;
+    left: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     animation: fadeIn 1s ease-in;
-    z-index: 1;
+    z-index: 100;
 }
 
 .ad-label {
@@ -210,7 +210,9 @@ footer {
         max-width: 150px;
     }
     .ad-container {
+        position: static; /* В потоке на мобильных */
         margin-top: 15px;
+        align-items: center;
     }
     .ad-label {
         font-size: 12px;
@@ -225,7 +227,9 @@ footer {
         height: 14px;
     }
     footer {
+        margin-top: 15px;
         padding-bottom: 20px;
+        font-size: 10px;
     }
 }
 </style>
