@@ -126,10 +126,11 @@
         <button class="action-btn method-btn initial" id="btn-moisture" onclick="App.toggleMethod('moisture')" aria-label="Расчёт влажности">Влажность</button>
         <button class="action-btn method-btn initial" id="btn-ice" onclick="App.toggleMethod('ice')" aria-label="Расчёт льдистости">Льдистость</button>
         <button class="action-btn method-btn initial" id="btn-thermophysics" onclick="App.toggleMethod('thermophysics')" aria-label="Расчёт теплофизики">Теплофизика</button>
+        <button class="action-btn method-btn initial" id="btn-freezing" onclick="App.toggleMethod('freezing')">Температура начала замерзания</button>
     </div>
 
     <div id="test-container-moisture" class="test-container">
-        <p style="text-align: center; font-size: 16px; color: #000000;">После расчёта суммарной влажности (Wtot) вы сможете рассчитать дополнительные параметры: влажность между минеральными прослойками (Wm), влажность льда (Wi), влажность незамерзшей воды (Ww) и влажность порового льда (Wic).</p>
+        <p style="text-align: center; font-size: 16px; color: #000000;">После расчёта суммарной влажности (Wtot) вы сможете рассчитать дополнительные параметры: <br>влажность между прослойками (Wm), влажность за счет ледяных включений (Wi), <br>влажность за счет незамерзшей воды (Ww) и влажность за счет порового льда (Wic).</p>
         <div class="tests-container" id="tests-container-moisture"></div>
         <div style="text-align: center; margin-top: 25px;">
             <button class="action-btn always-active" onclick="App.addTest('moisture')" aria-label="Добавить новое испытание">+ Добавить испытание</button>
@@ -144,9 +145,18 @@
     </div>
 
     <div id="test-container-thermophysics" class="test-container">
+        <p style="text-align: center; font-size: 16px; color: #000000;">Сокращения: т.г. - <span style="color: blue">талый грунт (th)</span>, м.г. - <span style="color: blue">мерзлый грунт (f)</span>.</p>
+
         <div class="tests-container" id="tests-container-thermophysics"></div>
         <div style="text-align: center; margin-top: 25px;">
             <button class="action-btn always-active" onclick="App.addTest('thermophysics')" aria-label="Добавить новое испытание">+ Добавить испытание</button>
+        </div>
+    </div>
+
+    <div id="test-container-freezing" class="test-container">
+        <div class="tests-container" id="tests-container-freezing"></div>
+        <div style="text-align: center; margin-top: 25px;">
+            <button class="action-btn always-active" onclick="App.addTest('freezing')">+ Добавить испытание</button>
         </div>
     </div>
 
@@ -316,9 +326,9 @@
             },
 
             toggleMethod(method) {
-                const buttons = ['moisture', 'ice', 'thermophysics'].map(id => document.getElementById(`btn-${id}`));
+                const buttons = ['moisture', 'ice', 'thermophysics', 'freezing'].map(id => document.getElementById(`btn-${id}`));
                 buttons.forEach(btn => btn.classList.remove('initial'));
-                const containers = ['moisture', 'ice', 'thermophysics'].map(id => document.getElementById(`test-container-${id}`));
+                const containers = ['moisture', 'ice', 'thermophysics', 'freezing'].map(id => document.getElementById(`test-container-${id}`));
                 containers.forEach(container => container.classList.remove('active'));
                 document.getElementById(`test-container-${method}`).classList.add('active');
                 buttons.forEach(btn => btn.classList.remove('active'));
@@ -339,7 +349,7 @@
                 const calcDiv = document.createElement("div");
                 calcDiv.classList.add("calculation-container");
 
-                let sampleContent;
+               let sampleContent = "";
                 if (method === 'moisture') {
                     sampleContent = `
                         <div class="sample-block" id="initial-moisture-block">
@@ -394,9 +404,9 @@
                             </div>
                             <button class="btn-calc-green" id="calc-extra-moisture" onclick="App.calculateExtra('moisture')" aria-label="Рассчитать доп. параметры" style="display: none; margin-top: 10px;">Рассчитать доп. параметры</button>
                             <p>Влажность между прослойками (Wm): <span id="wm-value">-</span> д.е.</p>
-                            <p>Влажность льда (Wi): <span id="wi-value">-</span> д.е.</p>
-                            <p>Влажность незамерзшей воды (Ww): <span id="ww-value">-</span> д.е.</p>
-                            <p>Влажность порового льда (Wic): <span id="wic-value">-</span> д.е.</p>
+                            <p>Влажность за счет ледяных включений (Wi): <span id="wi-value">-</span> д.е.</p>
+                            <p>Влажность за счет незамерзшей воды (Ww): <span id="ww-value">-</span> д.е.</p>
+                            <p>Влажность за счет порового льда (Wic): <span id="wic-value">-</span> д.е.</p>
                         </div>
                     `;
                 } else if (method === 'ice') {
@@ -407,7 +417,7 @@
                                     <input type="number" class="wtot" placeholder="Суммарная влажность (Wtot), д.е." aria-label="Суммарная влажность" onkeypress="App.focusNextInput(event, this)">
                                     <input type="number" class="wm" placeholder="Влажность между прослойками (Wm), д.е." aria-label="Влажность между прослойками" onkeypress="App.focusNextInput(event, this)">
                                     <input type="number" class="ww" placeholder="Влажность за счёт незамерзшей воды (Ww), д.е." aria-label="Влажность за счёт незамерзшей воды" onkeypress="App.focusNextInput(event, this)">
-                                    <input type="number" class="wic" placeholder="Влажность порового льда (Wic), д.е." aria-label="Влажность порового льда" onkeypress="App.focusNextInput(event, this)">
+                                    <input type="number" class="wic" placeholder="Влажность за счет порового льда (Wic), д.е." aria-label="Влажность за счет порового льда" onkeypress="App.focusNextInput(event, this)">
                                     <input type="number" class="p" placeholder="Плотность (p), г/см³" aria-label="Плотность" onkeypress="App.focusNextInput(event, this)">
                                     <input type="number" class="ps" placeholder="Плотность частиц грунта (ps), г/см³" aria-label="Плотность частиц грунта" onkeypress="App.focusNextInput(event, this)">
                                     <input type="number" class="e" placeholder="Коэффициент пористости (e), д.е." aria-label="Коэффициент пористости" onkeypress="App.focusNextInput(event, this)">
@@ -421,15 +431,15 @@
                                 <div class="result-average"><span id="itot-value">-</span> д.е.</div>
                             </div>
                             <div class="average-row">
-                                <span class="average-label">Льдистость межпрослойочная (Ii):</span>
+                                <span class="average-label">Льдистость между прослойками (Ii):</span>
                                 <div class="result-average"><span id="ii-value">-</span> д.е.</div>
                             </div>
                             <div class="average-row">
-                                <span class="average-label">Льдистость поровая (Iic):</span>
+                                <span class="average-label">Льдистость за счет порового льда (Iic):</span>
                                 <div class="result-average"><span id="iic-value">-</span> д.е.</div>
                             </div>
                             <div class="average-row">
-                                <span class="average-label">Степень заполнения пор (Sr):</span>
+                                <span class="average-label">Степень заполнения пор льдом и незамерзшей водой (Sr):</span>
                                 <div class="result-average"><span id="sr-value">-</span> д.е.</div>
                             </div>
                         </div>
@@ -456,40 +466,39 @@
                                 </div>
                             </div>
                             <div class="sample-result" id="result-thermophysics">-</div>
-                            <button class="btn-delete-sample" onclick="App.deleteSample(this)" aria-label="Удалить образец">—</button>
                         </div>
                         <div class="average-container">
                             <div class="average-row">
-                                <span class="average-label">Теплопроводность талая (λth):</span>
-                                <div class="result-average"><span id="lth-value">-</span> Вт/(м·°С)</div>
+                                <span class="average-label">Теплопроводность т.г. (λth)  Вт/(м·°С):</span>
+                                <div class="result-average"><span id="lth-value">-</span></div>
                             </div>
                             <div class="average-row">
-                                <span class="average-label">Теплопроводность мерзлая (λf):</span>
-                                <div class="result-average"><span id="lf-value">-</span> Вт/(м·°С)</div>
+                                <span class="average-label">Теплопроводность м.г. (λf) Вт/(м·°С):</span>
+                                <div class="result-average"><span id="lf-value">-</span> </div>
+                            </div><p></p>
+                            <div class="average-row">
+                                <span class="average-label">Удельная теплоемкость т.г. (Cmth) ×10⁻⁶ Дж/(кг·°С):</span>
+                                <div class="result-average"><span id="cmth-value">-</span> </div>
                             </div>
                             <div class="average-row">
-                                <span class="average-label">Удельная теплоемкость талая (Cmth):</span>
-                                <div class="result-average"><span id="cmth-value">-</span> ×10⁻⁶ Дж/(кг·°С)</div>
+                                <span class="average-label">Удельная теплоемкость м.г. (Cmf) ×10⁻⁶ Дж/(кг·°С):</span>
+                                <div class="result-average"><span id="cmf-value">-</span> </div>
+                            </div><p></p>
+                            <div class="average-row">
+                                <span class="average-label">Объемная теплоемкость т.г. (Cth) ×10⁻⁶ Дж/(кг·°С):</span>
+                                <div class="result-average"><span id="cth-value">-</span> </div>
                             </div>
                             <div class="average-row">
-                                <span class="average-label">Удельная теплоемкость мерзлая (Cmf):</span>
-                                <div class="result-average"><span id="cmf-value">-</span> ×10⁻⁶ Дж/(кг·°С)</div>
+                                <span class="average-label">Объемная теплоемкость м.г. (Cf) ×10⁻⁶ Дж/(кг·°С):</span>
+                                <div class="result-average"><span id="cf-value">-</span> </div>
+                            </div><p></p>
+                            <div class="average-row">
+                                <span class="average-label">Температуропроводность т.г. (ath) ×10⁻⁶ м²/с:</span>
+                                <div class="result-average"><span id="ath-value">-</span> </div>
                             </div>
                             <div class="average-row">
-                                <span class="average-label">Объемная теплоемкость талая (Cth):</span>
-                                <div class="result-average"><span id="cth-value">-</span> ×10⁻⁶ Дж/(кг·°С)</div>
-                            </div>
-                            <div class="average-row">
-                                <span class="average-label">Объемная теплоемкость мерзлая (Cf):</span>
-                                <div class="result-average"><span id="cf-value">-</span> ×10⁻⁶ Дж/(кг·°С)</div>
-                            </div>
-                            <div class="average-row">
-                                <span class="average-label">Температуропроводность талая (ath):</span>
-                                <div class="result-average"><span id="ath-value">-</span> ×10⁻⁶ м²/с</div>
-                            </div>
-                            <div class="average-row">
-                                <span class="average-label">Температуропроводность мерзлая (af):</span>
-                                <div class="result-average"><span id="af-value">-</span> ×10⁻⁶ м²/с</div>
+                                <span class="average-label">Температуропроводность м.г. (af) ×10⁻⁶ м²/с:</span>
+                                <div class="result-average"><span id="af-value">-</span> </div>
                             </div>
                         </div>
                         <div class="action-row">
@@ -500,6 +509,42 @@
                         </div>
                     `;
                 }
+else if (method === 'freezing') {
+    sampleContent = `
+        <div class="sample-block">
+            <div class="sample-content">
+                <div class="sample-row">
+                    <select class="soil-type-freezing">
+                        <option value="Песок">Песок</option>
+                        <option value="Супесь">Супесь</option>
+                        <option value="Суглинок">Суглинок</option>
+                        <option value="Глина">Глина</option>
+                        <option value="Торф">Торф</option>
+                    </select>
+                    <input type="number" step="0.001" class="wtot-freezing" placeholder="Суммарная влажность (Wtot), д.е.">
+                    <input type="number" step="0.001" class="dsal-freezing" placeholder="Засоленность (Dsal), %">
+                </div>
+            </div>
+            <div class="sample-result">-</div>
+        </div>
+        <div class="average-container">
+            <div class="average-row" style="display: none;">
+                <span class="average-label">КПР:</span>
+                <div class="result-average"><span id="kpr-val">-</span></div>
+            </div>
+            <div class="average-row">
+                <span class="average-label">Температура начала замерзания, °C:</span>
+                <div class="result-average"><span id="tfreeze-val">-</span></div>
+            </div>
+        </div>
+        <div class="action-row">
+            <div>            
+                 <button class="btn-calc-green" onclick="App.calculateTest(this, 'freezing')" aria-label="Рассчитать">Рассчитать</button>
+                 <button class="btn-clear" onclick="App.clearTest(this)" aria-label="Очистить поля">Очистить</button>
+            </div>        
+        </div>
+    `;
+}
 
                 calcDiv.innerHTML = sampleContent;
                 calcWrapper.appendChild(calcDiv);
@@ -561,7 +606,38 @@
 
             calculateTest(btn, method) {
                 const block = btn.closest(".test-flex");
-                if (method === 'moisture') {
+if (method === 'freezing') {
+    const block = btn.closest(".calculation-container");
+    const soil = block.querySelector(".soil-type-freezing").value;
+    const Wtot = parseFloat(block.querySelector(".wtot-freezing").value) || 0;
+    const Dsal = parseFloat(block.querySelector(".dsal-freezing").value) || 0;
+
+    if (Wtot <= 0) {
+        block.querySelector(".sample-result").textContent = "Ошибка: Wtot должен быть > 0";
+        block.querySelector("#kpr-val").textContent = "-";
+        block.querySelector("#tfreeze-val").textContent = "-";
+        return;
+    }
+
+    const kpr = Number((Dsal / (Dsal + 100 * Wtot)).toFixed(5));
+
+    let base = 0;
+    if (soil === "Суглинок") base = -0.20;
+    else if (soil === "Глина") base = -0.25;
+    else if (soil === "Торф") base = -0.13;
+    else if (soil === "Песок") base = -0.10;
+    else if (soil === "Супесь") base = -0.15;
+
+    const t = Number((base - (53 * kpr + 40 * kpr * kpr)).toFixed(2));
+
+    block.querySelector("#kpr-val").textContent = kpr;
+    block.querySelector("#tfreeze-val").textContent = t;
+    block.querySelector(".sample-result").textContent = "Рассчитано";
+    return;
+}
+
+
+                else if (method === 'moisture') {
                     const sample = block.querySelector("#initial-moisture-block");
                     const boxWeight = parseFloat(sample.querySelector(".box-weight").value);
                     const wetWeight = parseFloat(sample.querySelector(".wet-weight").value);
