@@ -109,7 +109,7 @@ p {
     text-decoration: none;
     text-align: center;
     color: white;
-    background-color: #2e7d32;
+    background-color: #2e7d32; /* стандартная зелёная кнопка */
     border: 2px solid #2e7d32;
     border-radius: 12px;
     font-size: 16px;
@@ -121,6 +121,17 @@ p {
 
 .extra-buttons a:hover {
     background-color: #388e3c;
+    transform: scale(1.05);
+}
+
+/* Новая кнопка темно-серого цвета */
+.extra-buttons a.dark-gray {
+    background-color: #555555;
+    border: 2px solid #555555;
+}
+
+.extra-buttons a.dark-gray:hover {
+    background-color: #666666;
     transform: scale(1.05);
 }
 
@@ -210,7 +221,7 @@ footer {
         max-width: 150px;
     }
     .ad-container {
-        position: static; /* В потоке на мобильных */
+        position: static;
         margin-top: 15px;
         align-items: center;
     }
@@ -247,24 +258,13 @@ footer {
 </div>
 
 <div class="extra-buttons">
+    <a href="obrat.html" class="dark-gray">Обратные методы расчета</a>
     <a href="reference.html">Справочник</a>
     <a href="contacts.html">Контакты</a>
 </div>
 
 <footer>
     <div>© 2026 Geocalculator. Геологические расчеты онлайн</div>
-<script>
-function updateClock() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    document.getElementById("current-time").textContent = `${hours}:${minutes}:${seconds}`;
-}
-
-setInterval(updateClock, 1000);
-updateClock();
-</script>
+</footer>
 </body>
-
 </html>
