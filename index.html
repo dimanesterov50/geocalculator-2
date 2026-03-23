@@ -18,7 +18,6 @@ body {
     overflow-x: hidden;
     overflow-y: auto;
 }
-
 body::before {
     content: "";
     position: fixed;
@@ -33,7 +32,6 @@ body::before {
     pointer-events: none;
     z-index: 0;
 }
-
 .logo {
     max-width: 200px;
     height: auto;
@@ -42,14 +40,12 @@ body::before {
     margin-left: auto;
     margin-right: auto;
 }
-
 h1 {
     text-align: center;
     margin-top: 0;
     position: relative;
     z-index: 1;
 }
-
 p {
     text-align: center;
     max-width: 600px;
@@ -57,7 +53,6 @@ p {
     position: relative;
     z-index: 1;
 }
-
 .menu-buttons {
     display: grid;
     grid-template-columns: repeat(3, 220px);
@@ -67,7 +62,6 @@ p {
     position: relative;
     z-index: 1;
 }
-
 .menu-buttons a {
     display: flex;
     justify-content: center;
@@ -84,13 +78,11 @@ p {
     height: 100%;
     box-sizing: border-box;
 }
-
 .menu-buttons a:hover {
     background-color: #34495e;
     color: #f1f1f1;
     transform: scale(1.05);
 }
-
 .extra-buttons {
     display: flex;
     justify-content: center;
@@ -99,8 +91,8 @@ p {
     margin-bottom: 20px;
     position: relative;
     z-index: 1;
+    flex-wrap: wrap;
 }
-
 .extra-buttons a {
     display: flex;
     justify-content: center;
@@ -109,30 +101,44 @@ p {
     text-decoration: none;
     text-align: center;
     color: white;
-    background-color: #2e7d32; /* стандартная зелёная кнопка */
-    border: 2px solid #2e7d32;
+    border: 2px solid;
     border-radius: 12px;
     font-size: 16px;
     font-weight: bold;
     transition: background-color 0.3s, transform 0.2s;
-    height: 100%;
+    min-width: 220px;
     box-sizing: border-box;
 }
-
 .extra-buttons a:hover {
-    background-color: #388e3c;
     transform: scale(1.05);
 }
 
-/* Новая кнопка темно-серого цвета */
-.extra-buttons a.dark-gray {
+/* Цвета кнопок */
+.extra-buttons a.mechanics {
+    background-color: #8B4513;     /* saddlebrown — глубокий коричневый */
+    border-color: #8B4513;
+}
+.extra-buttons a.mechanics:hover {
+    background-color: #A0522D;     /* sienna — чуть теплее и светлее */
+    border-color: #A0522D;
+}
+
+.extra-buttons a.obrat {
     background-color: #555555;
-    border: 2px solid #555555;
+    border-color: #555555;
+}
+.extra-buttons a.obrat:hover {
+    background-color: #666666;
 }
 
-.extra-buttons a.dark-gray:hover {
-    background-color: #666666;
-    transform: scale(1.05);
+.extra-buttons a.reference,
+.extra-buttons a.contacts {
+    background-color: #2e7d32;
+    border-color: #2e7d32;
+}
+.extra-buttons a.reference:hover,
+.extra-buttons a.contacts:hover {
+    background-color: #388e3c;
 }
 
 footer {
@@ -146,7 +152,6 @@ footer {
     box-sizing: border-box;
     opacity: 0.7;
 }
-
 .ad-container {
     position: fixed;
     bottom: 60px;
@@ -157,7 +162,6 @@ footer {
     animation: fadeIn 1s ease-in;
     z-index: 100;
 }
-
 .ad-label {
     font-size: 14px;
     color: #333;
@@ -165,7 +169,6 @@ footer {
     font-weight: bold;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
-
 .ad-button {
     display: flex;
     justify-content: flex-start;
@@ -184,24 +187,20 @@ footer {
     transition: background-color 0.3s, transform 0.2s;
     gap: 8px;
 }
-
 .ad-button svg {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
 }
-
 .ad-button:hover {
     background-color: #ffd699;
     transform: scale(1.05);
     text-decoration: none;
 }
-
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
 @media screen and (max-width: 768px) {
     .menu-buttons {
         grid-template-columns: 1fr;
@@ -233,10 +232,6 @@ footer {
         padding: 10px 12px;
         max-width: 160px;
     }
-    .ad-button svg {
-        width: 14px;
-        height: 14px;
-    }
     footer {
         margin-top: 15px;
         padding-bottom: 20px;
@@ -258,9 +253,10 @@ footer {
 </div>
 
 <div class="extra-buttons">
-    <a href="obrat/obrat.html" class="dark-gray">Обратные методы расчета</a>
-    <a href="reference.html">Справочник</a>
-    <a href="contacts.html">Контакты</a>
+    <a href="mechanics/mechanics.html" class="mechanics">Механика</a>
+    <a href="obrat/obrat.html" class="obrat">Обратные методы расчета</a>
+    <a href="reference.html" class="reference">Справочник</a>
+    <a href="contacts.html" class="contacts">Контакты</a>
 </div>
 
 <footer>
